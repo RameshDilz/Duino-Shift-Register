@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Shift Register LED Designer</title>
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: #101010;
+  color: white;
+  font-family: Arial, sans-serif;
+  padding: 20px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: auto;
+}
+
+h1 {
+  text-align: center;
+  color: #00ff88;
+}
+
+.card {
+  background: #1d1d1d;
+  padding: 20px;
+  margin: 20px 0;
+  border-radius: 15px;
+  box-shadow: 0 0 15px #000;
+}
+
+h2 {
+  color: #00ff88;
+}
+
+label {
+  display: block;
+  margin-top: 15px;
+  color: #aaa;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  margin-top: 5px;
+  background: #303030;
+  color: white;
+  border: none;
+  border-radius: 8px;
+}
+
+input:disabled {
+  color: #00ff88;
+  opacity: 1;
+  -webkit-text-fill-color: #00ff88;
+}
+
+button {
+  background: #00c853;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #00ff66;
+}
+
+.info {
+  background: #252525;
+  padding: 15px;
+  border-radius: 10px;
+  color: #00ff88;
+  margin-top: 15px;
+}
+
+.warning {
+  background: #3a1f1f;
+  padding: 12px;
+  border-radius: 10px;
+  color: #ff8080;
+  margin-top: 10px;
+  display: none;
+}
+
+.channelBox {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #252525;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 10px;
+}
+
+.channelBox select {
+  width: 250px;
+}
+
+.pinGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 15px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th {
+  background: #333;
+  padding: 10px;
+}
+
+td {
+  border: 1px solid #555;
+  padding: 8px;
+  text-align: center;
+}
+
+.cell {
+  width: 35px;
+  height: 35px;
+  background: #333;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: auto;
+}
+
+.cell:hover {
+  background: #555;
+}
+
+.cell.on {
+  background: #00ff66;
+  box-shadow: 0 0 15px #00ff66;
+}
+
+.previewRow {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 10px;
+}
+
+.regionButton {
+  background: #ff5252;
+}
+
+.regionButton:hover {
+  background: #ff1744;
+}
+
+.repeatButton {
+  background: #7c4dff;
+}
+
+.repeatButton:hover {
+  background: #651fff;
+}
+
+.actionCell {
+  white-space: nowrap;
+  width: 1%;
+}
+
+.actionCell button {
+  margin-top: 0;
+  margin-left: 10px;
+}
+
+#arduinoCode {
+  height: 450px;
+  font-family: monospace;
+  color: #00ff66;
+  background: #050505;
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>🔗 Shift Register LED Designer | Developed by RD</h1>
+
+  <button onclick="saveProject()">💾 Save Project</button>
+  <button onclick="document.getElementById('importFile').click()">📂 Import Project</button>
+  <input type="file" id="importFile" accept=".json" style="display:none" onchange="importProject(event)">
+
+  <div class="card">
+    <h2>Project Setup</h2>
+
+    <label>Project Name</label>
+    <input id="projectName" placeholder="My Shift Register Project">
+
+    <label>Controller Board</label>
+    <select id="board" onchange="updatePins()">
+      <option>Arduino UNO</option>
+      <option>Arduino Nano</option>
+      <option>Arduino Mega</option>
+      <option>ESP8266</option>
+      <option>ESP32</option>
+    </select>
+
+    <label>Pin Mode</label>
+    <select id="pinMode" onchange="updatePins()">
+      <option value="safe">Safe Pins</option>
+      <option value="custom">Custom Pins</option>
+    </select>
+
+    <div class="info">
+      Board: <span id="boardInfo"></span><br><br>
+      Available Pins: <span id="pinInfo"></span>
+    </div>
+
+    <label>Initial Frame Count</label>
+    <input id="frameCount" type="number" value="10" min="1">
+  </div>
+
+  <div class="card">
+    <h2>Shift Register Setup</h2>
+
+    <label>Shift Register Model</label>
+    <select id="srModel" onchange="updateModelInfo()">
+      <option value="74HC595">74HC595 (8-bit, standard)</option>
+      <option value="74HC4094">74HC4094 (8-bit, shift/store)</option>
+      <option value="TPIC6B595">TPIC6B595 (8-bit, high-current)</option>
+      <option value="STP16CP05">STP16CP05 (16-bit, LED driver)</option>
+    </select>
+
+    <label>Number of Shift Registers (chained)</label>
+    <input id="regCount" type="number" value="1" min="1" max="32" onchange="updateModelInfo()">
+
+    <div class="info">
+      Bits per IC: <span id="bitsInfo"></span><br><br>
+      Total Channels: <span id="totalChannelsInfo"></span>
+    </div>
+
+    <label>Control Pins</label>
+    <div class="pinGrid">
+      <div>
+        <label>Data (SER / DS)</label>
+        <select id="dataPin" onchange="checkPinConflicts()"></select>
+      </div>
+      <div>
+        <label>Clock (SRCLK / SH_CP)</label>
+        <select id="clockPin" onchange="checkPinConflicts()"></select>
+      </div>
+      <div>
+        <label>Latch (RCLK / ST_CP)</label>
+        <select id="latchPin" onchange="checkPinConflicts()"></select>
+      </div>
+    </div>
+
+    <div class="warning" id="pinWarning">⚠ Data, Clock and Latch pins must all be different.</div>
+
+    <input type="hidden" id="channelCount" value="0">
+
+    <button onclick="createShiftChannels()">Create Channels</button>
+  </div>
+
+  <div class="card">
+    <h2>Channel Map</h2>
+    <div id="channels">No channels created</div>
+    <button onclick="createTimeline()">Create Timeline</button>
+  </div>
+
+  <div class="card">
+    <h2>Timeline Editor</h2>
+    <div id="timeline">Timeline will appear here</div>
+  </div>
+
+  <div class="card">
+    <h2>💡 Live Preview</h2>
+    <div id="previewLights" class="previewRow">No channels created</div>
+    <button onclick="playPreview()">▶ Play Preview</button>
+    <button onclick="stopPreview()">⏹ Stop Preview</button>
+  </div>
+
+  <!-- DELAY CONTROL -->
+  <div class="card">
+    <h2>⏱ Delay Regions</h2>
+
+    <label>Default Delay (ms)</label>
+    <input id="defaultDelay" type="number" value="500">
+    <button onclick="setDefaultDelay()">Apply Default Delay</button>
+
+    <table id="delayTable">
+      <tr>
+        <th>Start Frame</th>
+        <th>End Frame</th>
+        <th>Delay</th>
+        <th>Action</th>
+      </tr>
+    </table>
+
+    <button onclick="addDelayRegion()">+ Add Delay Region</button>
+  </div>
+
+  <!-- REPEAT CONTROL -->
+  <div class="card">
+    <h2>🔁 Repeat Regions</h2>
+    <p>Select a frame range and repeat it without storing duplicate frames.</p>
+
+    <table id="repeatTable">
+      <tr>
+        <th>Start Frame</th>
+        <th>End Frame</th>
+        <th>Repeat Count</th>
+        <th>Action</th>
+      </tr>
+    </table>
+
+    <button class="repeatButton" onclick="addRepeatRegion()">+ Add Repeat Region</button>
+  </div>
+
+  <div class="card">
+    <h2>⚡ Arduino Code Generator</h2>
+    <button onclick="generateArduinoCode()">Generate Arduino Code</button>
+    <textarea id="arduinoCode">Generated Arduino code will appear here...</textarea>
+    <button onclick="copyCode()">📋 Copy Code</button>
+    <button onclick="downloadCode()">⬇ Download .ino</button>
+  </div>
+
+</div>
+
+<script>
+
+// ===============================
+// PIN DATABASE (same as base designer)
+// ===============================
+
+const safePins = {
+  "Arduino UNO": ["D2","D3","D4","D5","D6","D7","D8","D9","D10","D11","D12","D13"],
+  "Arduino Nano": ["D2","D3","D4","D5","D6","D7","D8","D9","D10","D11","D12","D13"],
+  "Arduino Mega": [
+    "D2","D3","D4","D5","D6","D7","D8","D9","D10","D11","D12","D13",
+    "D22","D23","D24","D25","D26","D27","D28","D29","D30","D31","D32","D33",
+    "D34","D35","D36","D37","D38","D39","D40","D41","D42","D43","D44","D45",
+    "D46","D47","D48","D49","D50","D51","D52","D53"
+  ],
+  "ESP8266": ["GPIO16","GPIO5","GPIO4","GPIO14","GPIO12","GPIO13"],
+  "ESP32": [
+    "GPIO4","GPIO13","GPIO14","GPIO16","GPIO17","GPIO18","GPIO19",
+    "GPIO21","GPIO22","GPIO23","GPIO25","GPIO26","GPIO27","GPIO32","GPIO33"
+  ]
+};
+
+const customPins = {
+  "Arduino UNO": ["D0","D1","D2","D3","D4","D5","D6","D7","D8","D9","D10","D11","D12","D13","A0","A1","A2","A3","A4","A5"],
+  "Arduino Nano": ["D0","D1","D2","D3","D4","D5","D6","D7","D8","D9","D10","D11","D12","D13","A0","A1","A2","A3","A4","A5"],
+  "Arduino Mega": [
+    "D0","D1","D2","D3","D4","D5","D6","D7","D8","D9","D10","D11","D12","D13",
+    "D22","D23","D24","D25","D26","D27","D28","D29","D30","D31","D32","D33",
+    "D34","D35","D36","D37","D38","D39","D40","D41","D42","D43","D44","D45",
+    "D46","D47","D48","D49","D50","D51","D52","D53",
+    "A0","A1","A2","A3","A4","A5"
+  ],
+  "ESP8266": ["GPIO16","GPIO5","GPIO4","GPIO0","GPIO2","GPIO14","GPIO12","GPIO13","GPIO15","GPIO1"],
+  "ESP32": [
+    "GPIO0","GPIO1","GPIO2","GPIO4","GPIO5","GPIO12","GPIO13","GPIO14","GPIO15","GPIO16",
+    "GPIO17","GPIO18","GPIO19","GPIO21","GPIO22","GPIO23","GPIO25","GPIO26","GPIO27","GPIO32","GPIO33"
+  ]
+};
+
+// ===============================
+// SHIFT REGISTER DATABASE
+// ===============================
+
+const shiftRegisterModels = {
+  "74HC595":   { bits: 8,  desc: "8-bit standard shift register" },
+  "74HC4094":  { bits: 8,  desc: "8-bit shift/store register" },
+  "TPIC6B595": { bits: 8,  desc: "8-bit high-current output register" },
+  "STP16CP05": { bits: 16, desc: "16-bit constant-current LED driver" }
+};
+
+// ===============================
+// GLOBAL DATA
+// ===============================
+
+let availablePins = [];
+let frameData = [];
+let defaultDelay = 500;
+let delayRegions = [];
+let repeatRegions = [];
+
+// ===============================
+// UPDATE PINS
+// ===============================
+
+function updatePins() {
+  let board = document.getElementById("board").value;
+  let mode = document.getElementById("pinMode").value;
+
+  availablePins = mode == "safe" ? safePins[board] : customPins[board];
+
+  document.getElementById("boardInfo").innerHTML = board;
+  document.getElementById("pinInfo").innerHTML = availablePins.length;
+
+  populateControlPins();
+  checkPinConflicts();
+}
+
+function populateControlPins() {
+  let options = availablePins.map(p => `<option value="${p}">${p}</option>`).join("");
+
+  ["dataPin", "clockPin", "latchPin"].forEach((id, index) => {
+    let sel = document.getElementById(id);
+    let prev = sel.value;
+    sel.innerHTML = options;
+    if (availablePins.includes(prev)) {
+      sel.value = prev;
+    } else if (availablePins[index]) {
+      sel.value = availablePins[index];
+    }
+  });
+}
+
+function checkPinConflicts() {
+  let d = document.getElementById("dataPin").value;
+  let c = document.getElementById("clockPin").value;
+  let l = document.getElementById("latchPin").value;
+
+  let conflict = (d == c) || (d == l) || (c == l);
+  document.getElementById("pinWarning").style.display = conflict ? "block" : "none";
+  return !conflict;
+}
+
+updatePins();
+
+// ===============================
+// SHIFT REGISTER MODEL INFO
+// ===============================
+
+function updateModelInfo() {
+  let model = document.getElementById("srModel").value;
+  let regs = Number(document.getElementById("regCount").value) || 1;
+  let bits = shiftRegisterModels[model].bits;
+
+  document.getElementById("bitsInfo").innerHTML = bits;
+  document.getElementById("totalChannelsInfo").innerHTML = bits * regs;
+}
+
+updateModelInfo();
+
+// ===============================
+// CHANNEL CREATION (shift-register mapped)
+// ===============================
+
+function createShiftChannels() {
+  if (!checkPinConflicts()) {
+    alert("Data, Clock and Latch pins must all be different.");
+    return;
+  }
+
+  let model = document.getElementById("srModel").value;
+  let bits = shiftRegisterModels[model].bits;
+
+  let regs = Number(document.getElementById("regCount").value);
+  if (regs < 1) regs = 1;
+
+  let totalChannels = bits * regs;
+  document.getElementById("channelCount").value = totalChannels;
+  updateModelInfo();
+
+  let html = "";
+  for (let r = 0; r < regs; r++) {
+    let startCh = r * bits + 1;
+    let endCh = r * bits + bits;
+    html += `
+      <div class="channelBox">
+        <b>IC ${r + 1}</b> — ${model}
+        <span>Channels ${startCh}–${endCh}</span>
+      </div>
+    `;
+  }
+
+  document.getElementById("channels").innerHTML = html;
+}
+
+// ===============================
+// TIMELINE CREATE
+// ===============================
+
+function createTimeline() {
+  let channels = Number(document.getElementById("channelCount").value);
+  let frames = Number(document.getElementById("frameCount").value);
+
+  if (channels < 1) {
+    alert("Create channels first.");
+    return;
+  }
+
+  frameData = [];
+  for (let i = 0; i < frames; i++) {
+    frameData.push({ state: new Array(channels).fill(0) });
+  }
+
+  renderTimeline();
+  renderDelayRegions();
+  renderRepeatRegions();
+}
+
+// ===============================
+// TIMELINE RENDER
+// ===============================
+
+function renderTimeline() {
+  let channels = Number(document.getElementById("channelCount").value);
+
+  let html = "<table>";
+  html += "<tr><th>Frame</th>";
+  for (let c = 0; c < channels; c++) {
+    html += `<th>CH${c + 1}</th>`;
+  }
+  html += "<th>Action</th></tr>";
+
+  frameData.forEach((frame, index) => {
+    let activeDelay = getFrameDelay(index + 1);
+
+    html += `<tr><td>${index + 1}</td>`;
+
+    frame.state.forEach((v, c) => {
+      html += `
+        <td>
+          <div class="cell ${v ? "on" : ""}" onclick="toggleCell(this,${index},${c})"></div>
+        </td>
+      `;
+    });
+
+    html += `
+      <td class="actionCell">
+        Delay: ${activeDelay} ms
+        <button onclick="removeFrame(${index})">Remove</button>
+      </td>
+      </tr>
+    `;
+  });
+
+  html += `
+    <tr>
+      <td colspan="${channels + 2}">
+        <button onclick="addFrames()">+ Add Frames</button>
+        <button onclick="removeFramesRange()">- Remove Frames</button>
+      </td>
+    </tr>
+  `;
+
+  html += "</table>";
+
+  document.getElementById("timeline").innerHTML = html;
+}
+
+// ===============================
+// LIVE PREVIEW
+// ===============================
+
+let previewTimer = null;
+let previewFrameIndex = 0;
+let previewSequence = [];
+
+function refreshPreviewSequence() {
+  if (!previewTimer) return;
+
+  previewSequence = buildPreviewSequence();
+
+  if (previewFrameIndex >= previewSequence.length) {
+    previewFrameIndex = 0;
+  }
+}
+
+function renderPreviewLights() {
+  let channels = Number(document.getElementById("channelCount").value);
+
+  let html = "";
+  for (let c = 0; c < channels; c++) {
+    html += `<div class="cell" id="previewCell${c}"></div>`;
+  }
+
+  document.getElementById("previewLights").innerHTML = html || "No channels created";
+}
+
+function updatePreviewFrame(index) {
+  let channels = Number(document.getElementById("channelCount").value);
+  let frame = frameData[index];
+
+  for (let c = 0; c < channels; c++) {
+    let el = document.getElementById("previewCell" + c);
+    if (!el) continue;
+    let on = frame && frame.state[c];
+    el.classList.toggle("on", !!on);
+  }
+}
+
+function buildPreviewSequence() {
+  let sequence = [];
+  let frame = 0;
+
+  while (frame < frameData.length) {
+    let repeated = false;
+
+    repeatRegions.forEach(r => {
+      if (r.end >= r.start && frame == r.start - 1) {
+        for (let x = 0; x < r.count; x++) {
+          for (let f = r.start - 1; f < r.end; f++) {
+            sequence.push(f);
+          }
+        }
+        frame = r.end;
+        repeated = true;
+      }
+    });
+
+    if (!repeated) {
+      sequence.push(frame);
+      frame++;
+    }
+  }
+
+  return sequence;
+}
+
+function stepPreview() {
+  if (previewSequence.length == 0) return;
+
+  if (previewFrameIndex >= previewSequence.length) {
+    previewFrameIndex = 0;
+  }
+
+  let frame = previewSequence[previewFrameIndex];
+  updatePreviewFrame(frame);
+
+  let delay = getFrameDelay(frame + 1);
+  previewFrameIndex++;
+
+  previewTimer = setTimeout(stepPreview, delay);
+}
+
+function playPreview() {
+  if (frameData.length == 0) return;
+
+  stopPreview();
+  renderPreviewLights();
+  previewSequence = buildPreviewSequence();
+  previewFrameIndex = 0;
+  stepPreview();
+}
+
+function stopPreview() {
+  if (previewTimer) {
+    clearTimeout(previewTimer);
+    previewTimer = null;
+  }
+}
+
+// ===============================
+// FRAME CONTROL
+// ===============================
+
+function toggleCell(el, frame, channel) {
+  frameData[frame].state[channel] ^= 1;
+  el.classList.toggle("on");
+}
+
+function addFrames() {
+  let amount = Number(prompt("How many frames add?"));
+  if (!amount) return;
+
+  let channels = Number(document.getElementById("channelCount").value);
+
+  for (let i = 0; i < amount; i++) {
+    frameData.push({ state: new Array(channels).fill(0) });
+  }
+
+  renderTimeline();
+  refreshPreviewSequence();
+}
+
+function removeFrame(index) {
+  frameData.splice(index, 1);
+  renderTimeline();
+  refreshPreviewSequence();
+}
+
+function removeFramesRange() {
+  let start = Number(prompt("Remove from frame:"));
+  let end = Number(prompt("Remove to frame:"));
+  if (!start || !end) return;
+
+  if (start < 1) start = 1;
+  if (end > frameData.length) end = frameData.length;
+
+  frameData.splice(start - 1, end - start + 1);
+  renderTimeline();
+  refreshPreviewSequence();
+}
+
+// ===============================
+// DELAY SYSTEM
+// ===============================
+
+function getFrameDelay(frameNumber) {
+  let delay = defaultDelay;
+
+  delayRegions.forEach(r => {
+    if (frameNumber >= r.start && frameNumber <= r.end) {
+      delay = r.delay;
+    }
+  });
+
+  return delay;
+}
+
+function setDefaultDelay() {
+  defaultDelay = Number(document.getElementById("defaultDelay").value);
+  renderTimeline();
+}
+
+function addDelayRegion() {
+  let start = Number(prompt("Start Frame:"));
+  let end = Number(prompt("End Frame:"));
+  let delay = Number(prompt("Delay ms:"));
+  if (!start || !end || !delay) return;
+
+  delayRegions.push({ start: start, end: end, delay: delay });
+
+  renderDelayRegions();
+  renderTimeline();
+}
+
+function renderDelayRegions() {
+  let table = document.getElementById("delayTable");
+  if (!table) return;
+
+  let html = `
+    <tr>
+      <th>Start Frame</th>
+      <th>End Frame</th>
+      <th>Delay</th>
+      <th>Action</th>
+    </tr>
+  `;
+
+  delayRegions.forEach((r, index) => {
+    html += `
+      <tr>
+        <td>${r.start}</td>
+        <td>${r.end}</td>
+        <td>${r.delay} ms</td>
+        <td>
+          <button class="regionButton" onclick="removeDelayRegion(${index})">Remove</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  table.innerHTML = html;
+}
+
+function removeDelayRegion(index) {
+  delayRegions.splice(index, 1);
+  renderDelayRegions();
+  renderTimeline();
+}
+
+// ===============================
+// REPEAT REGION SYSTEM
+// ===============================
+
+function addRepeatRegion() {
+  let start = Number(prompt("Start Frame:"));
+  let end = Number(prompt("End Frame:"));
+  let count = Number(prompt("How many times repeat:"));
+  if (!start || !end || !count) return;
+
+  if (end < start) {
+    alert("End frame must be greater than or equal to start frame.");
+    return;
+  }
+
+  repeatRegions.push({ start: start, end: end, count: count });
+
+  renderRepeatRegions();
+  refreshPreviewSequence();
+}
+
+function renderRepeatRegions() {
+  let table = document.getElementById("repeatTable");
+  if (!table) return;
+
+  let html = `
+    <tr>
+      <th>Start Frame</th>
+      <th>End Frame</th>
+      <th>Repeat Count</th>
+      <th>Action</th>
+    </tr>
+  `;
+
+  repeatRegions.forEach((r, index) => {
+    html += `
+      <tr>
+        <td>${r.start}</td>
+        <td>${r.end}</td>
+        <td>${r.count}x</td>
+        <td>
+          <button class="repeatButton" onclick="removeRepeatRegion(${index})">Remove</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  table.innerHTML = html;
+}
+
+function removeRepeatRegion(index) {
+  repeatRegions.splice(index, 1);
+  renderRepeatRegions();
+  refreshPreviewSequence();
+}
+
+renderDelayRegions();
+renderRepeatRegions();
+
+// =====================================
+// PROJECT SAVE / IMPORT
+// =====================================
+
+function saveProject() {
+  let projectData = {
+    projectName: document.getElementById("projectName").value,
+    board: document.getElementById("board").value,
+    pinMode: document.getElementById("pinMode").value,
+    frameCount: document.getElementById("frameCount").value,
+    srModel: document.getElementById("srModel").value,
+    regCount: document.getElementById("regCount").value,
+    dataPin: document.getElementById("dataPin").value,
+    clockPin: document.getElementById("clockPin").value,
+    latchPin: document.getElementById("latchPin").value,
+    channelCount: document.getElementById("channelCount").value,
+    frameData: frameData,
+    defaultDelay: defaultDelay,
+    delayRegions: delayRegions,
+    repeatRegions: repeatRegions
+  };
+
+  let blob = new Blob([JSON.stringify(projectData, null, 2)], { type: "application/json" });
+
+  let link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+
+  let name = projectData.projectName || "My_Project";
+  link.download = name.replace(/\s+/g, "_") + ".json";
+
+  link.click();
+}
+
+function importProject(event) {
+  let file = event.target.files[0];
+  if (!file) return;
+
+  let reader = new FileReader();
+
+  reader.onload = function (e) {
+    let data = JSON.parse(e.target.result);
+
+    document.getElementById("projectName").value = data.projectName || "";
+    document.getElementById("board").value = data.board;
+    document.getElementById("pinMode").value = data.pinMode;
+
+    updatePins();
+
+    document.getElementById("frameCount").value = data.frameCount;
+    document.getElementById("srModel").value = data.srModel || "74HC595";
+    document.getElementById("regCount").value = data.regCount || 1;
+
+    if (data.dataPin) document.getElementById("dataPin").value = data.dataPin;
+    if (data.clockPin) document.getElementById("clockPin").value = data.clockPin;
+    if (data.latchPin) document.getElementById("latchPin").value = data.latchPin;
+
+    updateModelInfo();
+    createShiftChannels();
+
+    document.getElementById("channelCount").value = data.channelCount;
+
+    frameData = data.frameData || [];
+    defaultDelay = data.defaultDelay || 500;
+    document.getElementById("defaultDelay").value = defaultDelay;
+
+    delayRegions = data.delayRegions || [];
+    repeatRegions = data.repeatRegions || [];
+
+    renderTimeline();
+    renderDelayRegions();
+    renderRepeatRegions();
+  };
+
+  reader.readAsText(file);
+  event.target.value = "";
+}
+
+// =====================================
+// ARDUINO CODE GENERATOR (shift-register, bit-packed)
+// =====================================
+
+function pinToNumber(p) {
+  if (p.startsWith("GPIO")) return p.replace("GPIO", "");
+  if (p.startsWith("D")) return p.replace("D", "");
+  return p;
+}
+
+function generateArduinoCode() {
+  let project = document.getElementById("projectName").value;
+  if (project == "") project = "My_Project";
+
+  let board = document.getElementById("board").value;
+  let model = document.getElementById("srModel").value;
+  let bits = shiftRegisterModels[model].bits;
+  let regs = Number(document.getElementById("regCount").value);
+  let channels = Number(document.getElementById("channelCount").value);
+
+  let dataPinRaw = document.getElementById("dataPin").value;
+  let clockPinRaw = document.getElementById("clockPin").value;
+  let latchPinRaw = document.getElementById("latchPin").value;
+
+  let dataPin = pinToNumber(dataPinRaw);
+  let clockPin = pinToNumber(clockPinRaw);
+  let latchPin = pinToNumber(latchPinRaw);
+
+  let bytesPerFrame = Math.ceil(channels / 8);
+
+  let code = `
+/*
+Shift Register LED Designer
+Project  : ${project}
+Board    : ${board}
+Shift IC : ${model} x${regs} (${bits}-bit each, ${shiftRegisterModels[model].desc})
+Channels : ${channels}
+Frames   : ${frameData.length}
+DATA=${dataPinRaw}  CLOCK=${clockPinRaw}  LATCH=${latchPinRaw}
+8-BIT PACKED DATA, CHAINED SHIFT-OUT
+*/
+#include <Arduino.h>
+
+#define DATA_PIN  ${dataPin}
+#define CLOCK_PIN ${clockPin}
+#define LATCH_PIN ${latchPin}
+
+#define TOTAL_FRAMES ${frameData.length}
+#define BYTES_PER_FRAME ${bytesPerFrame}
+#define DEFAULT_DELAY ${defaultDelay}
+
+`;
+
+  // FRAME DATA
+  code += `const uint8_t animation[TOTAL_FRAMES][BYTES_PER_FRAME] PROGMEM =\n{\n`;
+
+  frameData.forEach(frame => {
+    code += "{";
+    for (let b = 0; b < bytesPerFrame; b++) {
+      let value = 0;
+      for (let bit = 0; bit < 8; bit++) {
+        let led = (b * 8) + bit;
+        if (led < channels && frame.state[led]) {
+          value |= (1 << bit);
+        }
+      }
+      code += "0b" + value.toString(2).padStart(8, "0");
+      if (b < bytesPerFrame - 1) code += ",";
+    }
+    code += "},\n";
+  });
+
+  code += `};\n\n`;
+
+  // DELAY TABLE
+  code += `
+struct DelayRegion
+{
+uint16_t start;
+uint16_t end;
+uint16_t delay;
+};
+
+const DelayRegion delayList[] PROGMEM =
+{
+`;
+
+  delayRegions.forEach(r => {
+    code += `{${r.start},${r.end},${r.delay}},\n`;
+  });
+
+  code += `
+};
+
+#define DELAY_COUNT ${delayRegions.length}
+
+`;
+
+  // REPEAT TABLE
+  code += `
+struct RepeatRegion
+{
+uint16_t start;
+uint16_t end;
+uint16_t count;
+};
+
+const RepeatRegion repeatList[] PROGMEM =
+{
+`;
+
+  repeatRegions.forEach(r => {
+    code += `{${r.start},${r.end},${r.count}},\n`;
+  });
+
+  code += `
+};
+
+#define REPEAT_COUNT ${repeatRegions.length}
+
+`;
+
+  // SETUP
+  code += `
+void setup()
+{
+
+pinMode(DATA_PIN,OUTPUT);
+pinMode(CLOCK_PIN,OUTPUT);
+pinMode(LATCH_PIN,OUTPUT);
+
+digitalWrite(CLOCK_PIN,LOW);
+digitalWrite(LATCH_PIN,LOW);
+
+}
+
+`;
+
+  // PLAY FRAME (optimized manual chained shift-out)
+  // The byte for the LAST IC in the chain is sent first, so every IC
+  // ends up latching its own channel byte once the whole frame has
+  // been clocked through. MSB of each byte goes out first. The 8-bit
+  // loop is manually unrolled to skip the extra call/branch overhead
+  // of the stock shiftOut() function.
+  code += `
+void playFrame(uint16_t frame)
+{
+
+for(int8_t b=BYTES_PER_FRAME-1;b>=0;b--)
+{
+
+uint8_t value=pgm_read_byte(&animation[frame][b]);
+
+for(int8_t bit=7;bit>=0;bit--)
+{
+
+digitalWrite(DATA_PIN,(value>>bit)&0x01);
+digitalWrite(CLOCK_PIN,HIGH);
+digitalWrite(CLOCK_PIN,LOW);
+
+}
+
+}
+
+digitalWrite(LATCH_PIN,HIGH);
+digitalWrite(LATCH_PIN,LOW);
+
+}
+
+`;
+
+  // DELAY FUNCTION
+  code += `
+uint16_t getDelay(uint16_t frame)
+{
+uint16_t d=DEFAULT_DELAY;
+
+for(uint8_t i=0;i<DELAY_COUNT;i++)
+{
+
+if(
+frame>=pgm_read_word(&delayList[i].start)
+&&
+frame<=pgm_read_word(&delayList[i].end)
+)
+{
+
+d=pgm_read_word(&delayList[i].delay);
+
+}
+
+}
+
+return d;
+
+}
+
+`;
+
+  // LOOP
+  code += `
+void loop()
+{
+
+uint16_t frame=0;
+
+while(frame<TOTAL_FRAMES)
+{
+
+bool repeated=false;
+
+for(uint8_t r=0;r<REPEAT_COUNT;r++)
+{
+
+uint16_t s=
+pgm_read_word(&repeatList[r].start);
+
+uint16_t e=
+pgm_read_word(&repeatList[r].end);
+
+uint16_t c=
+pgm_read_word(&repeatList[r].count);
+
+if(frame==s-1)
+{
+
+for(uint16_t x=0;x<c;x++)
+{
+
+for(uint16_t f=s-1;f<e;f++)
+{
+
+playFrame(f);
+delay(getDelay(f+1));
+
+}
+
+}
+
+frame=e;
+repeated=true;
+
+}
+
+}
+
+if(!repeated)
+{
+
+playFrame(frame);
+delay(getDelay(frame+1));
+frame++;
+
+}
+
+}
+
+}
+
+`;
+
+  document.getElementById("arduinoCode").value = code;
+}
+
+// COPY
+function copyCode() {
+  let text = document.getElementById("arduinoCode");
+  text.select();
+  document.execCommand("copy");
+  alert("Arduino code copied!");
+}
+
+// DOWNLOAD
+function downloadCode() {
+  let project = document.getElementById("projectName").value;
+  if (project == "") project = "My_Project";
+
+  let code = document.getElementById("arduinoCode").value;
+
+  let blob = new Blob([code], { type: "text/plain" });
+
+  let link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = project.replace(/\s+/g, "_") + ".ino";
+
+  link.click();
+}
+
+</script>
+</body>
+</html>
