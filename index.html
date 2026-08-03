@@ -1,0 +1,3849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#00ff88">
+<meta name="description" content="Design LED animations for shift registers with Arduino code generation">
+<title>Shift Register LED Designer</title>
+<style>
+* {
+  box-sizing: border-box;
+}
+body {
+  background: #101010;
+  color: white;
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  margin: 0;
+  padding-bottom: 40px;
+}
+.container {
+  max-width: 1200px;
+  margin: auto;
+}
+h1 {
+  text-align: center;
+  color: #00ff88;
+  font-size: 1.8rem;
+}
+.card {
+  background: #1d1d1d;
+  padding: 20px;
+  margin: 20px 0;
+  border-radius: 15px;
+  box-shadow: 0 0 15px #000;
+}
+h2 {
+  color: #00ff88;
+  margin-top: 0;
+}
+.groupLabel {
+  color: #aaa;
+  font-size: 14px;
+  font-weight: normal;
+}
+label {
+  display: block;
+  margin-top: 15px;
+  color: #aaa;
+}
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  margin-top: 5px;
+  background: #303030;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  outline: none;
+  font-size: 16px;
+}
+input:focus, select:focus, textarea:focus {
+  box-shadow: 0 0 0 2px #00ff88;
+}
+input:disabled {
+  color: #00ff88;
+  opacity: 1;
+  -webkit-text-fill-color: #00ff88;
+}
+button {
+  background: #00c853;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  margin-top: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+  touch-action: manipulation;
+}
+button:hover:not(:disabled) {
+  background: #00ff66;
+}
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-secondary {
+  background: #404040;
+}
+.btn-secondary:hover:not(:disabled) {
+  background: #505050;
+}
+.btn-danger {
+  background: #ff5252;
+}
+.btn-danger:hover:not(:disabled) {
+  background: #ff1744;
+}
+.btn-purple {
+  background: #7c4dff;
+}
+.btn-purple:hover:not(:disabled) {
+  background: #651fff;
+}
+.btn-small {
+  padding: 5px 10px;
+  margin: 0 2px;
+  font-size: 12px;
+}
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.group-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.group-tab {
+  background: #404040;
+}
+.group-tab:hover:not(:disabled) {
+  background: #505050;
+}
+.group-tab.active {
+  background: #00c853;
+  box-shadow: 0 0 0 2px #00ff88;
+}
+.group-tab.active:hover:not(:disabled) {
+  background: #00c853;
+}
+.group-tab.sync-active {
+  background: #7c4dff;
+  box-shadow: 0 0 0 2px #b388ff;
+}
+.group-tab.sync-active:hover:not(:disabled) {
+  background: #7c4dff;
+}
+.memberRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #252525;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+.memberRow input {
+  width: auto;
+  margin: 0;
+}
+.memberRow span {
+  color: #aaa;
+  font-size: 13px;
+}
+.info {
+  background: #252525;
+  padding: 15px;
+  border-radius: 10px;
+  color: #00ff88;
+  margin-top: 15px;
+}
+.warning {
+  background: #3a1f1f;
+  padding: 12px;
+  border-radius: 10px;
+  color: #ff8080;
+  margin-top: 10px;
+  display: none;
+}
+.hint {
+  color: #666;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+.channelBox {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #252525;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+.pinGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+.timeline-wrapper {
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+th {
+  background: #333;
+  padding: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+td {
+  border: 1px solid #333;
+  padding: 8px;
+  text-align: center;
+}
+.frame-num {
+  background: #252525;
+  position: sticky;
+  left: 0;
+  z-index: 4;
+}
+.cell {
+  width: 28px;
+  height: 28px;
+  background: #333;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: auto;
+  transition: all 0.15s;
+}
+.cell:hover {
+  background: #555;
+}
+.cell.on {
+  background: #00ff66;
+  box-shadow: 0 0 15px #00ff66;
+}
+.previewRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.preview-cell {
+  width: 35px;
+  height: 35px;
+  background: #333;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+.preview-cell.on {
+  background: #00ff66;
+  box-shadow: 0 0 15px #00ff66;
+}
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 15px;
+}
+#arduinoCode {
+  height: 450px;
+  font-family: monospace;
+  color: #00ff66;
+  background: #050505;
+  resize: vertical;
+}
+/* Scheduling Styles */
+.schedule-box {
+  background: #1a1a2e;
+  border: 1px solid #00ff88;
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 15px;
+}
+.schedule-box h4 {
+  color: #00ff88;
+  margin: 0 0 10px 0;
+  font-size: 14px;
+}
+.schedule-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+}
+.schedule-option input[type="radio"] {
+  width: auto;
+  margin: 0;
+}
+.schedule-option label {
+  margin: 0;
+  color: #fff;
+  cursor: pointer;
+}
+.after-groups-list {
+  margin-left: 25px;
+  margin-top: 10px;
+  padding: 10px;
+  background: #252525;
+  border-radius: 8px;
+  display: none;
+}
+.after-groups-list.visible {
+  display: block;
+}
+.after-group-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+}
+.after-group-item input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+.after-group-item label {
+  margin: 0;
+  color: #ccc;
+  font-size: 13px;
+  cursor: pointer;
+}
+/* Modal Styles */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.active {
+  display: flex;
+}
+.modal {
+  background: #1d1d1d;
+  padding: 25px;
+  border-radius: 15px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 0 30px #000;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal h3 {
+  color: #00ff88;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+.modal-error {
+  color: #ff8080;
+  font-size: 14px;
+  margin-top: 10px;
+  display: none;
+}
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+/* Toast Styles */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  left: 20px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  z-index: 200;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+@media (min-width: 600px) {
+  .toast {
+    left: auto;
+    min-width: 250px;
+  }
+}
+.toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+.toast.success {
+  background: #00c853;
+}
+.toast.error {
+  background: #ff5252;
+}
+.toast.info {
+  background: #2196f3;
+}
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #1d1d1d;
+}
+::-webkit-scrollbar-thumb {
+  background: #404040;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #505050;
+}
+/* Responsive */
+@media (max-width: 600px) {
+  body {
+    padding: 10px;
+  }
+  h1 {
+    font-size: 1.3rem;
+  }
+  .card {
+    padding: 15px;
+  }
+  button {
+    padding: 8px 15px;
+    font-size: 13px;
+  }
+  .toolbar button {
+    flex: 1;
+    min-width: 100px;
+  }
+  .group-tabs button {
+    flex: 1;
+    min-width: 100px;
+  }
+  .previewRow {
+    display: grid;
+    gap: 5px;
+  }
+  .preview-cell {
+    width: 100%;
+    max-width: 30px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    margin: 0 auto;
+  }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🔗 Shift Register LED Designer | Developed by RD</h1>
+  <div class="toolbar">
+    <button onclick="saveProject()">💾 Save Project</button>
+    <button onclick="document.getElementById('importFile').click()">📂 Import Project</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importProject(event)">
+  </div>
+  <div class="card">
+    <h2>Project Setup</h2>
+    <label>Project Name</label>
+    <input id="projectName" placeholder="My Shift Register Project">
+    <div class="pinGrid">
+      <div>
+        <label>Controller Board</label>
+        <select id="board" onchange="updatePins()">
+          <option>Arduino UNO</option>
+          <option>Arduino Nano</option>
+          <option>Arduino Mega</option>
+          <option>ESP8266</option>
+          <option>ESP32</option>
+        </select>
+      </div>
+      <div>
+        <label>Pin Mode</label>
+        <select id="pinMode" onchange="updatePins()">
+          <option value="safe">Safe Pins</option>
+          <option value="custom">Custom Pins</option>
+        </select>
+      </div>
+    </div>
+    <div class="info">
+      Board: <span id="boardInfo"></span><br><br>
+      Available Pins: <span id="pinInfo"></span>
+    </div>
+    <label>Initial Frame Count</label>
+    <input id="frameCount" type="number" value="10" min="1">
+  </div>
+  <div class="card">
+    <h2>🧩 LED Groups</h2>
+    <p style="color:#aaa;">Each group is an independent shift register chain with its own pins, timeline, delays, repeats and preview.</p>
+    <div class="group-tabs" id="groupTabs"></div>
+    <div class="action-buttons">
+      <button onclick="addGroup()">+ Add Group</button>
+      <button class="btn-danger" onclick="removeActiveGroup()">🗑 Remove Group</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>🔗 Sync Groups</h2>
+    <p style="color:#aaa;">
+      A sync group merges 2 or more groups into ONE big pattern.<br>
+      Merged chains update at the same instant, like one big chain.
+    </p>
+    <div class="group-tabs" id="syncTabs"></div>
+    <div class="action-buttons">
+      <button class="btn-purple" onclick="addSyncGroup()">+ Add Sync Group</button>
+      <button class="btn-danger" onclick="removeActiveSyncGroup()">🗑 Remove Sync Group</button>
+    </div>
+    <div id="syncConfig" style="display:none;">
+      <label>Which groups should sync? (merged in this order)</label>
+      <div id="syncMembers"></div>
+      <div class="info" id="syncInfo">
+        Merged Channels: <span id="syncChannelsInfo">0</span><br><br>
+        Sync Frames: <span id="syncFramesInfo">0</span><br><br>
+        Other non-member groups will stay OFF unless you add them in <b>Play With</b>.
+      </div>
+      <div class="warning" id="syncWarning"></div>
+      <button class="btn-purple" onclick="createSyncTimeline()">Create Sync Timeline</button>
+    </div>
+  </div>
+  
+  <!-- Scheduling Card -->
+  <div class="card" id="schedulingCard">
+    <h2>⏰ Play Scheduling <span class="groupLabel"></span></h2>
+    <p style="color:#aaa;">Set when this group/sync should start playing in the animation sequence.</p>
+    <div class="schedule-box">
+      <h4>When should this play?</h4>
+      <div class="schedule-option">
+        <input type="radio" id="scheduleBeginning" name="scheduleType" value="beginning" onchange="onScheduleChange()">
+        <label for="scheduleBeginning">▶ From Beginning (starts immediately)</label>
+      </div>
+      <div class="schedule-option">
+        <input type="radio" id="scheduleAfter" name="scheduleType" value="after" onchange="onScheduleChange()">
+        <label for="scheduleAfter">⏳ After Groups (waits for selected groups to complete)</label>
+      </div>
+      <div class="after-groups-list" id="afterGroupsList">
+        <p style="color:#aaa; margin:0 0 10px 0; font-size:12px;">Select which groups must finish before this one starts:</p>
+        <div id="afterGroupsCheckboxes"></div>
+      </div>
+    </div>
+
+    <!-- Loop Count - always visible for every group/sync, in its own schedule area -->
+    <div class="schedule-box" id="loopCountBox" style="margin-top:15px;">
+      <h4>🔁 Loop Count Before Switching</h4>
+      <p style="color:#aaa; margin:0 0 10px 0; font-size:12px;">How many full loops of this group's/sync's entire timeline should play before switching to whichever group is scheduled to play after it?</p>
+      <label for="ownLoopCountInput" style="color:#ccc; font-size:12px; display:block; margin-bottom:5px;">Loop count:</label>
+      <input type="number" id="ownLoopCountInput" min="1" value="1" style="width:80px;" onchange="onOwnLoopCountChange(this.value)">
+      <div class="info" id="loopEstimateInfo" style="margin-top:10px;">
+        Estimated full play time at this loop count: <span id="loopEstimateText">0.0s</span>
+      </div>
+    </div>
+    
+    <!-- Play With - only for regular groups -->
+    <div class="schedule-box" id="playWithBox" style="display:none; margin-top:15px; border-color:#ff9800;">
+      <h4 style="color:#ff9800;">🔀 Play With (Parallel Groups)</h4>
+      <p style="color:#aaa; margin:0 0 10px 0; font-size:12px;">Select groups that should play their patterns alongside this group. They will loop until this main group finishes.</p>
+      <div id="playWithCheckboxes"></div>
+    </div>
+  </div>
+  
+  <div class="card" id="srSetupCard">
+    <h2>Shift Register Setup <span class="groupLabel"></span></h2>
+    <label>Shift Register Model</label>
+    <select id="srModel" onchange="updateModelInfo()">
+      <option value="74HC595">74HC595 (8-bit, standard)</option>
+      <option value="74HC4094">74HC4094 (8-bit, shift/store)</option>
+      <option value="TPIC6B595">TPIC6B595 (8-bit, high-current)</option>
+      <option value="STP16CP05">STP16CP05 (16-bit, LED driver)</option>
+    </select>
+    <label>Number of Shift Registers (chained, 1-32)</label>
+    <input id="regCount" type="number" value="1" min="1" max="32" onchange="updateModelInfo()">
+    <div class="info">
+      Bits per IC: <span id="bitsInfo"></span><br><br>
+      Total Channels: <span id="totalChannelsInfo"></span>
+    </div>
+    <label>Control Pins</label>
+    <div class="pinGrid">
+      <div>
+        <label>Data (SER / DS)</label>
+        <select id="dataPin" onchange="onPinChange()"></select>
+      </div>
+      <div>
+        <label>Clock (SRCLK / SH_CP)</label>
+        <select id="clockPin" onchange="onPinChange()"></select>
+      </div>
+      <div>
+        <label>Latch (RCLK / ST_CP)</label>
+        <select id="latchPin" onchange="onPinChange()"></select>
+      </div>
+    </div>
+    <div class="warning" id="pinWarning">⚠ Data, Clock and Latch pins must all be different.</div>
+    <button onclick="createShiftChannels()">Create Channels</button>
+  </div>
+  <div class="card" id="channelCard">
+    <h2>Channel Map <span class="groupLabel"></span></h2>
+    <div id="channels">No channels created</div>
+    <button onclick="createTimeline()">Create Timeline</button>
+  </div>
+  <div class="card">
+    <h2>Timeline Editor <span class="groupLabel"></span></h2>
+    <div class="timeline-wrapper">
+      <div id="timeline">Timeline will appear here</div>
+    </div>
+    <div class="action-buttons" id="timelineActions" style="display:none;">
+      <button onclick="openModal('addFramesModal')">+ Add Frames</button>
+      <button class="btn-danger" onclick="openModal('removeFramesModal')">- Remove Range</button>
+      <button class="btn-secondary" onclick="openModal('copyFramesModal')">📋 Copy Range</button>
+      <button class="btn-secondary" id="pasteBtn" onclick="openModal('pasteModal')" disabled>📄 Paste (0)</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>💡 Live Preview <span class="groupLabel"></span></h2>
+    <div id="previewLights" class="previewRow">No channels created</div>
+    <p id="previewInfo" style="color:#aaa; font-size:14px; margin:10px 0;"></p>
+    <button onclick="playPreview()">▶ Play Preview</button>
+    <button class="btn-secondary" onclick="stopPreview()">⏹ Stop Preview</button>
+  </div>
+  <!-- DELAY CONTROL -->
+  <div class="card">
+    <h2>⏱ Delay Regions <span class="groupLabel"></span></h2>
+    <label>Default Delay (1-60000 ms)</label>
+    <input id="defaultDelay" type="number" value="500" min="1" max="60000">
+    <button onclick="setDefaultDelay()">Apply Default Delay</button>
+    <table id="delayTable">
+      <tr>
+        <th>Start Frame</th>
+        <th>End Frame</th>
+        <th>Delay</th>
+        <th>Action</th>
+      </tr>
+    </table>
+    <button onclick="openModal('delayRegionModal')" id="addDelayBtn" disabled>+ Add Delay Region</button>
+  </div>
+  <!-- REPEAT CONTROL -->
+  <div class="card">
+    <h2>🔁 Repeat Regions <span class="groupLabel"></span></h2>
+    <p style="color:#aaa;">Select a frame range and repeat it without storing duplicate frames.</p>
+    <table id="repeatTable">
+      <tr>
+        <th>Start Frame</th>
+        <th>End Frame</th>
+        <th>Repeat Count</th>
+        <th>Action</th>
+      </tr>
+    </table>
+    <button class="btn-purple" onclick="openModal('repeatRegionModal')" id="addRepeatBtn" disabled>+ Add Repeat Region</button>
+  </div>
+  <div class="card">
+    <h2>⚡ Arduino Code Generator</h2>
+    <button onclick="generateArduinoCode()">Generate Arduino Code</button>
+    <textarea id="arduinoCode" readonly>Generated Arduino code will appear here...</textarea>
+    <div class="action-buttons">
+      <button onclick="copyCode()">📋 Copy Code</button>
+      <button onclick="downloadCode()">⬇ Download .ino</button>
+    </div>
+  </div>
+</div>
+<!-- Modals -->
+<div class="modal-overlay" id="addFramesModal">
+  <div class="modal">
+    <h3>Add Frames</h3>
+    <label>How many frames to add?</label>
+    <input type="number" id="addFramesInput" value="5" min="1">
+    <div class="modal-error" id="addFramesError"></div>
+    <div class="modal-buttons">
+      <button class="btn-secondary" onclick="closeModal('addFramesModal')">Cancel</button>
+      <button onclick="confirmAddFrames()">OK</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="removeFramesModal">
+  <div class="modal">
+    <h3>Remove Frames</h3>
+    <div class="hint" id="removeRangeHint"></div>
+    <label>Remove from frame</label>
+    <input type="number" id="removeStartInput" value="1" min="1">
+    <label>Remove to frame</label>
+    <input type="number" id="removeEndInput" value="1" min="1">
+    <div class="modal-error" id="removeFramesError"></div>
+    <div class="modal-buttons">
+      <button class="btn-secondary" onclick="closeModal('removeFramesModal')">Cancel</button>
+      <button class="btn-danger" onclick="confirmRemoveFrames()">Remove</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="copyFramesModal">
+  <div class="modal">
+    <h3>Copy Frame Range</h3>
+    <div class="hint" id="copyRangeHint"></div>
+    <label>Copy from frame</label>
+    <input type="number" id="copyStartInput" value="1" min="1">
+    <label>Copy to frame</label>
+    <input type="number" id="copyEndInput" value="1" min="1">
+    <div class="modal-error" id="copyFramesError"></div>
+    <div class="modal-buttons">
+      <button class="btn-secondary" onclick="closeModal('copyFramesModal')">Cancel</button>
+      <button onclick="confirmCopyFrames()">Copy</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="pasteModal">
+  <div class="modal">
+    <h3>Paste Frames</h3>
+    <div class="hint" id="pasteRangeHint"></div>
+    <label>Paste at frame</label>
+    <input type="number" id="pasteAfterInput" value="1" min="1">
+    <div class="modal-error" id="pasteError"></div>
+    <div class="modal-buttons">
+      <button class="btn-secondary" onclick="closeModal('pasteModal')">Cancel</button>
+      <button onclick="confirmPasteFrames()">Paste</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="delayRegionModal">
+  <div class="modal">
+    <h3>Add Delay Region</h3>
+    <div class="hint" id="delayRangeHint"></div>
+    <label>Start Frame</label>
+    <input type="number" id="delayStartInput" value="1" min="1">
+    <label>End Frame</label>
+    <input type="number" id="delayEndInput" value="1" min="1">
+    <label>Delay (ms)</label>
+    <input type="number" id="delayValueInput" value="500" min="1" max="60000">
+    <div class="modal-error" id="delayRegionError"></div>
+    <div class="modal-buttons">
+      <button class="btn-secondary" onclick="closeModal('delayRegionModal')">Cancel</button>
+      <button onclick="confirmAddDelayRegion()">Add</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="repeatRegionModal">
+  <div class="modal">
+    <h3>Add Repeat Region</h3>
+    <div class="hint" id="repeatRangeHint"></div>
+    <label>Start Frame</label>
+    <input type="number" id="repeatStartInput" value="1" min="1">
+    <label>End Frame</label>
+    <input type="number" id="repeatEndInput" value="1" min="1">
+    <label>Repeat Count</label>
+    <input type="number" id="repeatCountInput" value="2" min="1">
+    <div class="modal-error" id="repeatRegionError"></div>
+    <div class="modal-buttons">
+      <button class="btn-secondary" onclick="closeModal('repeatRegionModal')">Cancel</button>
+      <button class="btn-purple" onclick="confirmAddRepeatRegion()">Add</button>
+    </div>
+  </div>
+</div>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+<script>
+// ===============================
+// VALIDATION FUNCTIONS
+// ===============================
+function validateFrameNumber(value, max) {
+  const num = parseInt(value);
+  if (isNaN(num) || num < 1) return 1;
+  if (num > max) return max;
+  return Math.floor(num);
+}
+function validateDelay(value) {
+  const num = parseInt(value);
+  if (isNaN(num) || num < 1) return 1;
+  if (num > 60000) return 60000;
+  return Math.floor(num);
+}
+function validateRegCount(value) {
+  const num = parseInt(value);
+  if (isNaN(num) || num < 1) return 1;
+  if (num > 32) return 32;
+  return Math.floor(num);
+}
+function validateFrameCount(value) {
+  const num = parseInt(value);
+  if (isNaN(num) || num < 1) return 1;
+  return Math.floor(num);
+}
+function validateRepeatCount(value) {
+  const num = parseInt(value);
+  if (isNaN(num) || num < 1) return 1;
+  return Math.floor(num);
+}
+function validateFrameRange(start, end, maxFrames) {
+  const validStart = validateFrameNumber(start, maxFrames);
+  const validEnd = validateFrameNumber(end, maxFrames);
+  if (validEnd < validStart) return null;
+  return { start: validStart, end: validEnd };
+}
+function validatePasteAfter(value, maxFrames) {
+  const num = parseInt(value);
+  if (isNaN(num) || num < 1) return 1;
+  if (num > maxFrames + 1) return maxFrames + 1;
+  return Math.floor(num);
+}
+// ===============================
+// TOAST NOTIFICATIONS
+// ===============================
+function showToast(message, type = "success") {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.className = "toast " + type + " show";
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3000);
+}
+// ===============================
+// MODAL FUNCTIONS
+// ===============================
+function openModal(modalId) {
+  document.getElementById(modalId).classList.add("active");
+  const maxFrame = G().frameData.length;
+  if (modalId === "removeFramesModal") {
+    document.getElementById("removeStartInput").value = 1;
+    document.getElementById("removeEndInput").value = maxFrame;
+    document.getElementById("removeRangeHint").textContent = `Valid frame range: 1-${maxFrame}`;
+  }
+  if (modalId === "copyFramesModal") {
+    document.getElementById("copyStartInput").value = 1;
+    document.getElementById("copyEndInput").value = maxFrame;
+    document.getElementById("copyRangeHint").textContent = `Valid frame range: 1-${maxFrame}`;
+  }
+  if (modalId === "pasteModal") {
+    const pasteAtMax = maxFrame + 1;
+    document.getElementById("pasteAfterInput").value = pasteAtMax;
+    document.getElementById("pasteAfterInput").max = pasteAtMax;
+    document.getElementById("pasteRangeHint").textContent =
+      `Pasting ${copiedFrames ? copiedFrames.length : 0} frame(s). Valid frame: 1-${pasteAtMax} (enter ${pasteAtMax} to add at the end)`;
+  }
+  if (modalId === "delayRegionModal") {
+    document.getElementById("delayStartInput").value = 1;
+    document.getElementById("delayEndInput").value = maxFrame;
+    document.getElementById("delayRangeHint").textContent = `Valid frame range: 1-${maxFrame}`;
+  }
+  if (modalId === "repeatRegionModal") {
+    document.getElementById("repeatStartInput").value = 1;
+    document.getElementById("repeatEndInput").value = maxFrame;
+    document.getElementById("repeatRangeHint").textContent = `Valid frame range: 1-${maxFrame}`;
+  }
+  const errorDiv = document.querySelector("#" + modalId + " .modal-error");
+  if (errorDiv) {
+    errorDiv.style.display = "none";
+    errorDiv.textContent = "";
+  }
+}
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.remove("active");
+}
+function showModalError(modalId, message) {
+  const errorDiv = document.querySelector("#" + modalId + " .modal-error");
+  if (errorDiv) {
+    errorDiv.textContent = message;
+    errorDiv.style.display = "block";
+  }
+}
+// Close modals on overlay click
+document.querySelectorAll(".modal-overlay").forEach(overlay => {
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      overlay.classList.remove("active");
+    }
+  });
+});
+// Delegated click handling for the timeline table
+document.getElementById("timeline").addEventListener("click", (e) => {
+  const cell = e.target.closest(".cell");
+  if (cell) {
+    toggleCell(cell, Number(cell.dataset.frame), Number(cell.dataset.channel));
+    return;
+  }
+  const btn = e.target.closest("button[data-action]");
+  if (btn) {
+    const frame = Number(btn.dataset.frame);
+    if (btn.dataset.action === "copy") {
+      copyFrameAfter(frame);
+    } else if (btn.dataset.action === "remove") {
+      removeFrame(frame);
+    }
+  }
+});
+// ===============================
+// CLIPBOARD HELPER
+// ===============================
+async function copyToClipboard(text) {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (err) {
+    console.error("Clipboard API failed, falling back:", err);
+  }
+  try {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.width = "2em";
+    textArea.style.height = "2em";
+    textArea.style.padding = "0";
+    textArea.style.border = "none";
+    textArea.style.outline = "none";
+    textArea.style.boxShadow = "none";
+    textArea.style.background = "transparent";
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    textArea.setSelectionRange(0, text.length);
+    const success = document.execCommand("copy");
+    document.body.removeChild(textArea);
+    return success;
+  } catch (err) {
+    console.error("Fallback copy failed:", err);
+    return false;
+  }
+}
+// ===============================
+// PIN DATABASE
+// ===============================
+const safePins = {
+  "Arduino UNO": ["D2","D3","D4","D5","D6","D7","D8","D9","D10","D11","D12","D13"],
+  "Arduino Nano": ["D2","D3","D4","D5","D6","D7","D8","D9","D10","D11","D12","D13"],
+  "Arduino Mega": [
+    "D2","D3","D4","D5","D6","D7","D8","D9","D10","D11","D12","D13",
+    "D22","D23","D24","D25","D26","D27","D28","D29","D30","D31","D32","D33",
+    "D34","D35","D36","D37","D38","D39","D40","D41","D42","D43","D44","D45",
+    "D46","D47","D48","D49","D50","D51","D52","D53"
+  ],
+  "ESP8266": ["GPIO16","GPIO5","GPIO4","GPIO14","GPIO12","GPIO13"],
+  "ESP32": [
+    "GPIO4","GPIO13","GPIO14","GPIO16","GPIO17","GPIO18","GPIO19",
+    "GPIO21","GPIO22","GPIO23","GPIO25","GPIO26","GPIO27","GPIO32","GPIO33"
+  ]
+};
+const customPins = {
+  "Arduino UNO": ["D0","D1","D2","D3","D4","D5","D6","D7","D8","D9","D10","D11","D12","D13","A0","A1","A2","A3","A4","A5"],
+  "Arduino Nano": ["D0","D1","D2","D3","D4","D5","D6","D7","D8","D9","D10","D11","D12","D13","A0","A1","A2","A3","A4","A5"],
+  "Arduino Mega": [
+    "D0","D1","D2","D3","D4","D5","D6","D7","D8","D9","D10","D11","D12","D13",
+    "D22","D23","D24","D25","D26","D27","D28","D29","D30","D31","D32","D33",
+    "D34","D35","D36","D37","D38","D39","D40","D41","D42","D43","D44","D45",
+    "D46","D47","D48","D49","D50","D51","D52","D53",
+    "A0","A1","A2","A3","A4","A5"
+  ],
+  "ESP8266": ["GPIO16","GPIO5","GPIO4","GPIO0","GPIO2","GPIO14","GPIO12","GPIO13","GPIO15","GPIO1"],
+  "ESP32": [
+    "GPIO0","GPIO1","GPIO2","GPIO4","GPIO5","GPIO12","GPIO13","GPIO14","GPIO15","GPIO16",
+    "GPIO17","GPIO18","GPIO19","GPIO21","GPIO22","GPIO23","GPIO25","GPIO26","GPIO27","GPIO32","GPIO33"
+  ]
+};
+// ===============================
+// SHIFT REGISTER DATABASE
+// ===============================
+const shiftRegisterModels = {
+  "74HC595":   { bits: 8,  desc: "8-bit standard shift register" },
+  "74HC4094":  { bits: 8,  desc: "8-bit shift/store register" },
+  "TPIC6B595": { bits: 8,  desc: "8-bit high-current output register" },
+  "STP16CP05": { bits: 16, desc: "16-bit constant-current LED driver" }
+};
+// ===============================
+// GLOBAL DATA
+// ===============================
+let availablePins = [];
+let groups = [];
+let syncGroups = [];
+let editMode = "group";   // "group" or "sync"
+let activeGroup = 0;
+let activeSync = 0;
+let copiedFrames = null;
+
+// Active editing context
+function G() {
+  return editMode === "sync" ? syncGroups[activeSync] : groups[activeGroup];
+}
+
+// Active group (group-only cards)
+function AG() {
+  return groups[activeGroup];
+}
+
+function makeGroup(name) {
+  return {
+    name: name,
+    srModel: "74HC595",
+    regCount: 1,
+    dataPin: "",
+    clockPin: "",
+    latchPin: "",
+    channelCount: 0,
+    frameData: [],
+    defaultDelay: 500,
+    delayRegions: [],
+    repeatRegions: [],
+    // Scheduling
+    playWhen: "beginning",  // "beginning" or "after"
+    playAfter: [],          // array of {type: "group"|"sync", index: number}
+    playWith: [],           // array of {type: "group"|"sync", index: number}
+    ownLoopCount: 1         // how many full loops this group plays before switching to whatever plays after it
+  };
+}
+
+function makeSyncGroup(name) {
+  return {
+    name: name,
+    members: [],
+    memberChannels: [],
+    restMode: "run",
+    channelCount: 0,
+    frameData: [],
+    defaultDelay: 500,
+    delayRegions: [],
+    repeatRegions: [],
+    // Scheduling
+    playWhen: "beginning",
+    playAfter: [],
+    playWith: [],            // array of {type: "group"|"sync", index: number}
+    ownLoopCount: 1          // how many full loops this sync plays before switching to whatever plays after it
+  };
+}
+
+// Pins already used by other groups
+function pinsUsedByOthers(excludeIndex) {
+  const used = new Set();
+  groups.forEach((g, i) => {
+    if (i === excludeIndex) return;
+    [g.dataPin, g.clockPin, g.latchPin].forEach(p => { if (p) used.add(p); });
+  });
+  return used;
+}
+
+function assignFreePins(group, excludeIndex) {
+  const used = pinsUsedByOthers(excludeIndex);
+  const free = availablePins.filter(p => !used.has(p));
+  group.dataPin = free[0] || availablePins[0] || "";
+  group.clockPin = free[1] || availablePins[1] || "";
+  group.latchPin = free[2] || availablePins[2] || "";
+}
+
+// ===============================
+// PLAY TIME CALCULATION
+// ===============================
+function delayForFrame(ctx, frameNumber) {
+  let d = ctx.defaultDelay;
+  ctx.delayRegions.forEach(r => {
+    if (frameNumber >= r.start && frameNumber <= r.end) {
+      d = r.delay;
+    }
+  });
+  return d;
+}
+
+function playTimeMs(ctx) {
+  let total = 0;
+  let frame = 0;
+  while (frame < ctx.frameData.length) {
+    let repeated = false;
+    for (const r of ctx.repeatRegions) {
+      if (r.end >= r.start && frame === r.start - 1) {
+        for (let x = 0; x < r.count; x++) {
+          for (let f = r.start - 1; f < r.end; f++) {
+            total += delayForFrame(ctx, f + 1);
+          }
+        }
+        frame = r.end;
+        repeated = true;
+        break;
+      }
+    }
+    if (!repeated) {
+      total += delayForFrame(ctx, frame + 1);
+      frame++;
+    }
+  }
+  return total;
+}
+
+function fmtSeconds(ms) {
+  return (ms / 1000).toFixed(1) + "s";
+}
+
+// ===============================
+// SCHEDULING FUNCTIONS
+// ===============================
+function onScheduleChange() {
+  const ctx = G();
+  if (!ctx) return;
+  
+  const isBeginning = document.getElementById("scheduleBeginning").checked;
+  ctx.playWhen = isBeginning ? "beginning" : "after";
+  
+  const afterList = document.getElementById("afterGroupsList");
+  if (isBeginning) {
+    afterList.classList.remove("visible");
+    ctx.playAfter = [];
+  } else {
+    afterList.classList.add("visible");
+  }
+}
+
+function onAfterGroupChange(type, index, checked) {
+  const ctx = G();
+  if (!ctx) return;
+  
+  // Only ONE selection allowed in After Groups - setting one replaces any previous selection
+  if (checked) {
+    // Loop count comes from the selected group's/sync's own Loop Count field
+    const sourceCtx = type === "group" ? groups[index] : syncGroups[index];
+    const loops = (sourceCtx && sourceCtx.ownLoopCount) || 1;
+    ctx.playAfter = [{ type: type, index: index, loops: loops }];
+  } else {
+    ctx.playAfter = [];
+  }
+  
+  // Re-render to update disabled states across all items
+  renderSchedulingOptions();
+}
+
+function onOwnLoopCountChange(value) {
+  const ctx = G();
+  if (!ctx) return;
+  
+  let loops = parseInt(value, 10);
+  if (isNaN(loops) || loops < 1) loops = 1;
+  ctx.ownLoopCount = loops;
+  document.getElementById("ownLoopCountInput").value = loops;
+  
+  // Keep any item that already plays after this group/sync in sync with
+  // its updated loop count, since the loop count now lives here instead
+  // of on the dependent's "After Groups" section.
+  const myType = editMode === "sync" ? "sync" : "group";
+  const myIndex = editMode === "sync" ? activeSync : activeGroup;
+  groups.forEach(g => {
+    if (g.playAfter.length > 0 && g.playAfter[0].type === myType && g.playAfter[0].index === myIndex) {
+      g.playAfter[0].loops = loops;
+    }
+  });
+  syncGroups.forEach(s => {
+    if (s.playAfter.length > 0 && s.playAfter[0].type === myType && s.playAfter[0].index === myIndex) {
+      s.playAfter[0].loops = loops;
+    }
+  });
+  
+  updateLoopEstimate();
+}
+
+function updateLoopEstimate() {
+  const ctx = G();
+  if (!ctx) return;
+  const loops = ctx.ownLoopCount || 1;
+  const totalMs = playTimeMs(ctx) * loops;
+  document.getElementById("loopEstimateText").textContent = fmtSeconds(totalMs);
+}
+
+function onPlayWithChange(type, index, checked) {
+  const ctx = G();
+  if (!ctx) return;
+  
+  // Remove existing entry
+  ctx.playWith = ctx.playWith.filter(item => !(item.type === type && item.index === index));
+  
+  // Add if checked
+  if (checked) {
+    ctx.playWith.push({ type: type, index: index });
+    
+    // If a sync group was selected, remove its member groups from playWith
+    // (they are now controlled by the sync and can't play independently)
+    if (type === "sync" && syncGroups[index]) {
+      const memberSet = new Set(syncGroups[index].members);
+      ctx.playWith = ctx.playWith.filter(item => !(item.type === "group" && memberSet.has(item.index)));
+    }
+  }
+  
+  // Re-render to update disabled states
+  renderSchedulingOptions();
+}
+
+function renderSchedulingOptions() {
+  const ctx = G();
+  if (!ctx) return;
+  
+  // Check if another item already has "from beginning"
+  const currentKey = editMode === "group" ? `group-${activeGroup}` : `sync-${activeSync}`;
+  let anotherHasBeginning = false;
+  groups.forEach((g, i) => {
+    if (`group-${i}` !== currentKey && g.playWhen === "beginning") anotherHasBeginning = true;
+  });
+  syncGroups.forEach((s, i) => {
+    if (`sync-${i}` !== currentKey && s.playWhen === "beginning") anotherHasBeginning = true;
+  });
+  
+  // Set radio buttons
+  const beginRadio = document.getElementById("scheduleBeginning");
+  const afterRadio = document.getElementById("scheduleAfter");
+  beginRadio.checked = ctx.playWhen === "beginning";
+  afterRadio.checked = ctx.playWhen === "after";
+  
+  // Disable "From Beginning" if another item already has it (unless this one has it)
+  if (anotherHasBeginning && ctx.playWhen !== "beginning") {
+    beginRadio.disabled = true;
+    beginRadio.parentElement.style.opacity = "0.4";
+  } else {
+    beginRadio.disabled = false;
+    beginRadio.parentElement.style.opacity = "1";
+  }
+  
+  // Show/hide after groups list
+  const afterList = document.getElementById("afterGroupsList");
+  if (ctx.playWhen === "after") {
+    afterList.classList.add("visible");
+  } else {
+    afterList.classList.remove("visible");
+  }
+  
+  // Collect all items already claimed as "play after" by OTHER groups/syncs
+  // Each item can only be used as a dependency by ONE other item
+  const claimedDeps = new Set();
+  groups.forEach((g, i) => {
+    if (editMode === "group" && i === activeGroup) return;
+    g.playAfter.forEach(dep => claimedDeps.add(`${dep.type}-${dep.index}`));
+  });
+  syncGroups.forEach((s, i) => {
+    if (editMode === "sync" && i === activeSync) return;
+    s.playAfter.forEach(dep => claimedDeps.add(`${dep.type}-${dep.index}`));
+  });
+  
+  // Check if an item is already selected in this group's "After Groups"
+  const hasSelectedAfter = ctx.playAfter && ctx.playAfter.length > 0;
+  
+  // Build checkboxes for other groups and sync groups
+  let html = "";
+  
+  // Add regular groups (excluding current if editing a group)
+  groups.forEach((g, i) => {
+    if (editMode === "group" && i === activeGroup) return;
+    
+    const depKey = `group-${i}`;
+    const isChecked = ctx.playAfter.some(item => item.type === "group" && item.index === i);
+    const isClaimed = claimedDeps.has(depKey) && !isChecked;
+    const isLockedBySingleSelect = hasSelectedAfter && !isChecked;
+    
+    const disabled = (isClaimed || isLockedBySingleSelect) ? "disabled" : "";
+    const opacity = (isClaimed || isLockedBySingleSelect) ? "style=\"opacity:0.4\"" : "";
+    let claimNote = "";
+    if (isClaimed) {
+      claimNote = " (already used by another)";
+    }
+    
+    html += `
+      <div class="after-group-item" ${opacity}>
+        <input type="checkbox" id="afterGroup_g${i}" ${isChecked ? "checked" : ""} ${disabled}
+               onchange="onAfterGroupChange('group', ${i}, this.checked)">
+        <label for="afterGroup_g${i}">${g.name} (${g.frameData.length} frames, ~${fmtSeconds(playTimeMs(g))})${claimNote}</label>
+      </div>
+    `;
+  });
+  
+  // Add sync groups (excluding current if editing a sync group)
+  syncGroups.forEach((s, i) => {
+    if (editMode === "sync" && i === activeSync) return;
+    
+    const depKey = `sync-${i}`;
+    const isChecked = ctx.playAfter.some(item => item.type === "sync" && item.index === i);
+    const isClaimed = claimedDeps.has(depKey) && !isChecked;
+    const isLockedBySingleSelect = hasSelectedAfter && !isChecked;
+    
+    const disabled = (isClaimed || isLockedBySingleSelect) ? "disabled" : "";
+    const opacity = (isClaimed || isLockedBySingleSelect) ? "style=\"opacity:0.4\"" : "";
+    let claimNote = "";
+    if (isClaimed) {
+      claimNote = " (already used by another)";
+    }
+    
+    html += `
+      <div class="after-group-item" ${opacity}>
+        <input type="checkbox" id="afterGroup_s${i}" ${isChecked ? "checked" : ""} ${disabled}
+               onchange="onAfterGroupChange('sync', ${i}, this.checked)">
+        <label for="afterGroup_s${i}">${s.name} (${s.frameData.length} frames, ~${fmtSeconds(playTimeMs(s))})${claimNote}</label>
+      </div>
+    `;
+  });
+  
+  if (html === "") {
+    html = '<p style="color:#666; font-size:12px; margin:0;">No other groups available</p>';
+  }
+  
+  document.getElementById("afterGroupsCheckboxes").innerHTML = html;
+  
+  // Populate this group's/sync's own Loop Count box and its estimated play time
+  document.getElementById("ownLoopCountInput").value = ctx.ownLoopCount || 1;
+  updateLoopEstimate();
+  
+  // Play With options - for regular groups and sync groups
+  const playWithBox = document.getElementById("playWithBox");
+  playWithBox.style.display = "block";
+  
+  let playWithHtml = "";
+  
+  if (editMode === "group") {
+    const currentGroup = AG();
+    const currentGroupIndex = activeGroup;
+    
+    // Collect group indexes locked by selected sync playWith items
+    const lockedBySync = new Set();
+    currentGroup.playWith.forEach(pw => {
+      if (pw.type === "sync" && syncGroups[pw.index]) {
+        syncGroups[pw.index].members.forEach(m => lockedBySync.add(m));
+      }
+    });
+    
+    // Show other normal groups — disable if locked by a selected sync
+    groups.forEach((g, i) => {
+      if (i === currentGroupIndex) return;
+      
+      const isChecked = currentGroup.playWith.some(item => item.type === "group" && item.index === i);
+      const isLocked = lockedBySync.has(i);
+      const disabled = isLocked ? "disabled" : "";
+      const opacity = isLocked ? "style=\"opacity:0.4\"" : "";
+      const lockNote = isLocked ? " ⛔ used by selected sync" : "";
+      playWithHtml += `
+        <div class="after-group-item" ${opacity}>
+          <input type="checkbox" id="playWith_g${i}" ${isChecked && !isLocked ? "checked" : ""} ${disabled}
+                 onchange="onPlayWithChange('group', ${i}, this.checked)">
+          <label for="playWith_g${i}">🧩 ${g.name} (${g.frameData.length} frames, loops while this group plays)${lockNote}</label>
+        </div>
+      `;
+    });
+    
+    // Show sync groups — but only if this group is NOT a member of that sync
+    syncGroups.forEach((s, i) => {
+      if (s.members.includes(currentGroupIndex)) return;
+      
+      const isChecked = currentGroup.playWith.some(item => item.type === "sync" && item.index === i);
+      playWithHtml += `
+        <div class="after-group-item">
+          <input type="checkbox" id="playWith_s${i}" ${isChecked ? "checked" : ""} 
+                 onchange="onPlayWithChange('sync', ${i}, this.checked)">
+          <label for="playWith_s${i}">🔗 ${s.name} [${s.members.map(m => "G" + (m+1)).join("+")}] (${s.frameData.length} frames, loops while this group plays)</label>
+        </div>
+      `;
+    });
+  } else if (editMode === "sync") {
+    const currentSync = syncGroups[activeSync];
+    
+    // Show normal groups — but only if NOT a member of this sync
+    groups.forEach((g, i) => {
+      if (currentSync.members.includes(i)) return;
+      
+      const isChecked = currentSync.playWith.some(item => item.type === "group" && item.index === i);
+      playWithHtml += `
+        <div class="after-group-item">
+          <input type="checkbox" id="playWith_g${i}" ${isChecked ? "checked" : ""} 
+                 onchange="onPlayWithChange('group', ${i}, this.checked)">
+          <label for="playWith_g${i}">🧩 ${g.name} (${g.frameData.length} frames, loops while this sync plays)</label>
+        </div>
+      `;
+    });
+    
+    // Show other sync groups (not the current one)
+    syncGroups.forEach((s, i) => {
+      if (i === activeSync) return;
+      
+      const isChecked = currentSync.playWith.some(item => item.type === "sync" && item.index === i);
+      playWithHtml += `
+        <div class="after-group-item">
+          <input type="checkbox" id="playWith_s${i}" ${isChecked ? "checked" : ""} 
+                 onchange="onPlayWithChange('sync', ${i}, this.checked)">
+          <label for="playWith_s${i}">🔗 ${s.name} (${s.frameData.length} frames, loops while this sync plays)</label>
+        </div>
+      `;
+    });
+  }
+  
+  if (playWithHtml === "") {
+    playWithHtml = '<p style="color:#666; font-size:12px; margin:0;">No other groups available (sync member groups are excluded)</p>';
+  }
+  
+  document.getElementById("playWithCheckboxes").innerHTML = playWithHtml;
+}
+
+// ===============================
+// GROUP MANAGEMENT
+// ===============================
+function addGroup() {
+  const used = new Set();
+  groups.forEach(g => [g.dataPin, g.clockPin, g.latchPin].forEach(p => { if (p) used.add(p); }));
+  const free = availablePins.filter(p => !used.has(p));
+  if (free.length < 3) {
+    showToast("Not enough free pins on this board for another group.", "error");
+    return;
+  }
+  const group = makeGroup("Group " + (groups.length + 1));
+  // First group defaults to "beginning", all others default to "after"
+  if (groups.length > 0) {
+    group.playWhen = "after";
+  }
+  groups.push(group);
+  assignFreePins(group, groups.length - 1);
+  setActiveGroup(groups.length - 1);
+  showToast(`${group.name} added`);
+}
+
+function removeActiveGroup() {
+  if (editMode !== "group") {
+    showToast("Select a group tab first.", "error");
+    return;
+  }
+  if (groups.length <= 1) {
+    showToast("At least one group is required.", "error");
+    return;
+  }
+  const name = G().name;
+  stopPreview();
+  const removed = activeGroup;
+  groups.splice(removed, 1);
+  groups.forEach((g, i) => { g.name = "Group " + (i + 1); });
+  
+  // Fix sync member indexes
+  syncGroups.forEach(s => {
+    const before = s.members.join(",");
+    s.members = s.members.filter(m => m !== removed).map(m => m > removed ? m - 1 : m);
+    if (s.members.join(",") !== before) resetSyncTimeline(s);
+  });
+  
+  // Fix playAfter references in all groups and sync groups
+  groups.forEach(g => {
+    g.playAfter = g.playAfter.filter(item => {
+      if (item.type === "group") {
+        if (item.index === removed) return false;
+        if (item.index > removed) item.index--;
+      }
+      return true;
+    });
+    // Fix playWith references
+    g.playWith = g.playWith.filter(item => !(item.type === "group" && item.index === removed));
+    g.playWith.forEach(item => { if (item.type === "group" && item.index > removed) item.index--; });
+  });
+  syncGroups.forEach(s => {
+    s.playAfter = s.playAfter.filter(item => {
+      if (item.type === "group") {
+        if (item.index === removed) return false;
+        if (item.index > removed) item.index--;
+      }
+      return true;
+    });
+    // Fix playWith references for sync groups
+    s.playWith = s.playWith.filter(item => !(item.type === "group" && item.index === removed));
+    s.playWith.forEach(item => { if (item.type === "group" && item.index > removed) item.index--; });
+  });
+  
+  if (activeGroup >= groups.length) activeGroup = groups.length - 1;
+  setActiveGroup(activeGroup);
+  showToast(`${name} removed`);
+}
+
+function setActiveGroup(index) {
+  stopPreview();
+  editMode = "group";
+  activeGroup = index;
+  loadContextIntoUI();
+  renderTabs();
+}
+
+// ===============================
+// SYNC GROUP MANAGEMENT
+// ===============================
+function addSyncGroup() {
+  const s = makeSyncGroup("Sync " + (syncGroups.length + 1));
+  // Sync groups always default to "after" (beginning is for the first normal group)
+  s.playWhen = "after";
+  syncGroups.push(s);
+  setActiveSync(syncGroups.length - 1);
+  showToast(`${s.name} added - now select which groups should sync`);
+}
+
+function removeActiveSyncGroup() {
+  if (editMode !== "sync" || syncGroups.length === 0) {
+    showToast("Select a sync group tab first.", "error");
+    return;
+  }
+  const name = G().name;
+  stopPreview();
+  const removed = activeSync;
+  syncGroups.splice(removed, 1);
+  syncGroups.forEach((s, i) => { s.name = "Sync " + (i + 1); });
+  
+  // Fix playAfter and playWith references in all groups and sync groups
+  groups.forEach(g => {
+    g.playAfter = g.playAfter.filter(item => {
+      if (item.type === "sync") {
+        if (item.index === removed) return false;
+        if (item.index > removed) item.index--;
+      }
+      return true;
+    });
+    g.playWith = g.playWith.filter(item => !(item.type === "sync" && item.index === removed));
+    g.playWith.forEach(item => { if (item.type === "sync" && item.index > removed) item.index--; });
+  });
+  syncGroups.forEach(s => {
+    s.playAfter = s.playAfter.filter(item => {
+      if (item.type === "sync") {
+        if (item.index === removed) return false;
+        if (item.index > removed) item.index--;
+      }
+      return true;
+    });
+    s.playWith = s.playWith.filter(item => !(item.type === "sync" && item.index === removed));
+    s.playWith.forEach(item => { if (item.type === "sync" && item.index > removed) item.index--; });
+  });
+  
+  if (syncGroups.length === 0) {
+    setActiveGroup(Math.min(activeGroup, groups.length - 1));
+  } else {
+    if (activeSync >= syncGroups.length) activeSync = syncGroups.length - 1;
+    setActiveSync(activeSync);
+  }
+  showToast(`${name} removed`);
+}
+
+function setActiveSync(index) {
+  stopPreview();
+  editMode = "sync";
+  activeSync = index;
+  loadContextIntoUI();
+  renderTabs();
+}
+
+function resetSyncTimeline(s) {
+  s.frameData = [];
+  s.delayRegions = [];
+  s.repeatRegions = [];
+  s.channelCount = 0;
+  s.memberChannels = [];
+}
+
+function toggleSyncMember(idx, checked) {
+  const s = syncGroups[activeSync];
+  const hadTimeline = s.frameData.length > 0;
+  if (checked) {
+    if (!s.members.includes(idx)) s.members.push(idx);
+    s.members.sort((a, b) => a - b);
+  } else {
+    s.members = s.members.filter(m => m !== idx);
+  }
+  resetSyncTimeline(s);
+  loadContextIntoUI();
+  if (hadTimeline) showToast("Selected groups changed - sync timeline was reset.", "info");
+}
+
+function createSyncTimeline() {
+  const s = syncGroups[activeSync];
+  if (s.members.length < 2) {
+    showToast("Select at least 2 groups to sync.", "error");
+    return;
+  }
+  for (const m of s.members) {
+    if (groups[m].channelCount < 1) {
+      showToast(`${groups[m].name}: create channels first.`, "error");
+      return;
+    }
+  }
+  const frames = validateFrameCount(parseInt(document.getElementById("frameCount").value));
+  document.getElementById("frameCount").value = frames;
+  s.memberChannels = s.members.map(m => groups[m].channelCount);
+  s.channelCount = s.memberChannels.reduce((a, b) => a + b, 0);
+  s.frameData = [];
+  for (let i = 0; i < frames; i++) {
+    s.frameData.push({ state: new Array(s.channelCount).fill(0) });
+  }
+  s.delayRegions = [];
+  s.repeatRegions = [];
+  loadContextIntoUI();
+  renderTabs();
+  showToast(`Sync timeline created with ${frames} frames (${s.channelCount} channels)`);
+}
+
+function syncIsStale(s) {
+  return s.frameData.length > 0 &&
+    s.members.some((m, i) => !groups[m] || groups[m].channelCount !== s.memberChannels[i]);
+}
+
+function renderSyncCard() {
+  const config = document.getElementById("syncConfig");
+  if (editMode !== "sync" || syncGroups.length === 0) {
+    config.style.display = "none";
+    return;
+  }
+  config.style.display = "block";
+  const s = syncGroups[activeSync];
+  const rows = [];
+  groups.forEach((g, i) => {
+    const checked = s.members.includes(i) ? "checked" : "";
+    rows.push(
+      `<div class="memberRow">` +
+      `<input type="checkbox" id="syncMember${i}" ${checked} onchange="toggleSyncMember(${i}, this.checked)">` +
+      `<label for="syncMember${i}" style="margin:0;color:#fff;">${g.name}</label>` +
+      `<span>${g.srModel} x${g.regCount} — ${g.channelCount} channels — ${g.frameData.length} frames</span>` +
+      `</div>`
+    );
+  });
+  document.getElementById("syncMembers").innerHTML = rows.join("");
+  document.getElementById("syncChannelsInfo").textContent =
+    s.frameData.length > 0 ? s.channelCount : s.members.reduce((a, m) => a + groups[m].channelCount, 0);
+  document.getElementById("syncFramesInfo").textContent = s.frameData.length;
+  
+  const warning = document.getElementById("syncWarning");
+  if (syncIsStale(s)) {
+    warning.textContent = "⚠ A selected group's channel count changed. Recreate the sync timeline.";
+    warning.style.display = "block";
+  } else {
+    warning.style.display = "none";
+  }
+}
+
+// ===============================
+// TABS + CONTEXT LOADING
+// ===============================
+function renderTabs() {
+  const gtabs = [];
+  groups.forEach((g, i) => {
+    const cls = (editMode === "group" && i === activeGroup) ? "group-tab active" : "group-tab";
+    gtabs.push(`<button class="${cls}" onclick="setActiveGroup(${i})">${g.name}</button>`);
+  });
+  document.getElementById("groupTabs").innerHTML = gtabs.join("");
+  const stabs = [];
+  syncGroups.forEach((s, i) => {
+    const cls = (editMode === "sync" && i === activeSync) ? "group-tab sync-active" : "group-tab";
+    stabs.push(`<button class="${cls}" onclick="setActiveSync(${i})">${s.name}</button>`);
+  });
+  document.getElementById("syncTabs").innerHTML = stabs.length ? stabs.join("") : '<span class="hint">No sync groups yet</span>';
+  document.querySelectorAll(".groupLabel").forEach(el => {
+    el.textContent = "— " + G().name;
+  });
+}
+
+function loadContextIntoUI() {
+  const isGroup = editMode === "group";
+  document.getElementById("srSetupCard").style.display = isGroup ? "" : "none";
+  document.getElementById("channelCard").style.display = isGroup ? "" : "none";
+  
+  if (isGroup) {
+    const g = AG();
+    document.getElementById("srModel").value = g.srModel;
+    document.getElementById("regCount").value = g.regCount;
+    populateControlPins();
+    updateModelInfo();
+    checkPinConflicts();
+    renderChannels();
+  }
+  document.getElementById("defaultDelay").value = G().defaultDelay;
+  renderSyncCard();
+  renderTimeline();
+  renderDelayRegions();
+  renderRepeatRegions();
+  renderPreviewLights();
+  updatePreviewLights();
+  updatePasteButton();
+  renderSchedulingOptions();
+}
+
+function updatePasteButton() {
+  const pasteBtn = document.getElementById("pasteBtn");
+  if (!pasteBtn) return;
+  if (copiedFrames && copiedFrames.length > 0) {
+    pasteBtn.disabled = false;
+    pasteBtn.textContent = `📄 Paste (${copiedFrames.length})`;
+  } else {
+    pasteBtn.disabled = true;
+    pasteBtn.textContent = "📄 Paste (0)";
+  }
+}
+
+// ===============================
+// UPDATE PINS
+// ===============================
+function updatePins() {
+  const board = document.getElementById("board").value;
+  const mode = document.getElementById("pinMode").value;
+  availablePins = mode === "safe" ? safePins[board] : customPins[board];
+  document.getElementById("boardInfo").textContent = board;
+  document.getElementById("pinInfo").textContent = availablePins.length;
+  
+  const used = new Set();
+  let exhausted = false;
+  groups.forEach(g => {
+    ["dataPin", "clockPin", "latchPin"].forEach(key => {
+      if (!availablePins.includes(g[key]) || used.has(g[key])) {
+        const free = availablePins.find(p => !used.has(p));
+        if (!free) exhausted = true;
+        g[key] = free || availablePins[0] || "";
+      }
+      used.add(g[key]);
+    });
+  });
+  if (exhausted) {
+    showToast("Not enough pins on this board for all groups. Fix the pin conflicts.", "error");
+  }
+  if (groups.length > 0 && editMode === "group") {
+    populateControlPins();
+    checkPinConflicts();
+    renderTabs();
+  }
+}
+
+function populateControlPins() {
+  const g = AG();
+  const options = availablePins.map(p => `<option value="${p}">${p}</option>`).join("");
+  [["dataPin", g.dataPin], ["clockPin", g.clockPin], ["latchPin", g.latchPin]].forEach(([id, value], index) => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = options;
+    if (availablePins.includes(value)) {
+      sel.value = value;
+    } else if (availablePins[index]) {
+      sel.value = availablePins[index];
+    }
+  });
+}
+
+function onPinChange() {
+  const g = AG();
+  g.dataPin = document.getElementById("dataPin").value;
+  g.clockPin = document.getElementById("clockPin").value;
+  g.latchPin = document.getElementById("latchPin").value;
+  checkPinConflicts();
+}
+
+function checkPinConflicts() {
+  const d = document.getElementById("dataPin").value;
+  const c = document.getElementById("clockPin").value;
+  const l = document.getElementById("latchPin").value;
+  const warning = document.getElementById("pinWarning");
+  const internal = (d === c) || (d === l) || (c === l);
+  const others = pinsUsedByOthers(activeGroup);
+  const external = others.has(d) || others.has(c) || others.has(l);
+  if (internal) {
+    warning.textContent = "⚠ Data, Clock and Latch pins must all be different.";
+  } else if (external) {
+    warning.textContent = "⚠ One of these pins is already used by another group.";
+  }
+  warning.style.display = (internal || external) ? "block" : "none";
+  return !(internal || external);
+}
+
+function validateAllPins() {
+  const seen = {};
+  for (let i = 0; i < groups.length; i++) {
+    const g = groups[i];
+    const pins = [g.dataPin, g.clockPin, g.latchPin];
+    if (new Set(pins).size !== 3) {
+      return `${g.name}: Data, Clock and Latch pins must all be different.`;
+    }
+    for (const p of pins) {
+      if (seen[p]) return `Pin ${p} is used by both ${seen[p]} and ${g.name}.`;
+      seen[p] = g.name;
+    }
+  }
+  return null;
+}
+
+// ===============================
+// SHIFT REGISTER MODEL INFO
+// ===============================
+function updateModelInfo() {
+  const g = AG();
+  g.srModel = document.getElementById("srModel").value;
+  const regs = validateRegCount(parseInt(document.getElementById("regCount").value) || 1);
+  document.getElementById("regCount").value = regs;
+  g.regCount = regs;
+  const bits = shiftRegisterModels[g.srModel].bits;
+  document.getElementById("bitsInfo").textContent = bits;
+  document.getElementById("totalChannelsInfo").textContent = bits * regs;
+}
+
+// ===============================
+// CHANNEL CREATION
+// ===============================
+function createShiftChannels() {
+  if (!checkPinConflicts()) {
+    showToast("Fix the pin conflict first.", "error");
+    return;
+  }
+  const g = AG();
+  updateModelInfo();
+  const bits = shiftRegisterModels[g.srModel].bits;
+  const totalChannels = bits * g.regCount;
+  const changed = g.channelCount !== totalChannels;
+  g.channelCount = totalChannels;
+  renderChannels();
+  
+  if (changed) {
+    const gi = activeGroup;
+    syncGroups.forEach(s => {
+      const mi = s.members.indexOf(gi);
+      if (mi !== -1 && s.frameData.length > 0 && s.memberChannels[mi] !== totalChannels) {
+        resetSyncTimeline(s);
+        showToast(`${s.name} timeline was reset (selected group channels changed).`, "info");
+      }
+    });
+  }
+  renderTabs();
+  copiedFrames = null;
+  updatePasteButton();
+  showToast(`Created ${totalChannels} channels for ${g.name}`);
+}
+
+function renderChannels() {
+  const g = AG();
+  if (g.channelCount < 1) {
+    document.getElementById("channels").innerHTML = "No channels created";
+    return;
+  }
+  const bits = shiftRegisterModels[g.srModel].bits;
+  let html = "";
+  for (let r = 0; r < g.regCount; r++) {
+    const startCh = r * bits + 1;
+    const endCh = r * bits + bits;
+    html += `
+      <div class="channelBox">
+        <b>IC ${r + 1}</b> — ${g.srModel}
+        <span>Channels ${startCh}–${endCh}</span>
+      </div>
+    `;
+  }
+  document.getElementById("channels").innerHTML = html;
+}
+
+// ===============================
+// TIMELINE CREATE
+// ===============================
+function createTimeline() {
+  const g = AG();
+  const frames = validateFrameCount(parseInt(document.getElementById("frameCount").value));
+  document.getElementById("frameCount").value = frames;
+  if (g.channelCount < 1) {
+    showToast("Create channels first.", "error");
+    return;
+  }
+  g.frameData = [];
+  for (let i = 0; i < frames; i++) {
+    g.frameData.push({ state: new Array(g.channelCount).fill(0) });
+  }
+  renderTimeline();
+  renderDelayRegions();
+  renderRepeatRegions();
+  renderSyncCard();
+  renderSchedulingOptions();
+  updateActionButtons();
+  showToast(`Timeline created with ${frames} frames for ${g.name}`);
+}
+
+function updateActionButtons() {
+  const hasFrames = G().frameData.length > 0;
+  document.getElementById("timelineActions").style.display = hasFrames ? "flex" : "none";
+  document.getElementById("addDelayBtn").disabled = !hasFrames;
+  document.getElementById("addRepeatBtn").disabled = !hasFrames;
+}
+
+function channelLabels(ctx) {
+  if (!ctx.members) {
+    const labels = [];
+    for (let c = 0; c < ctx.channelCount; c++) labels.push(`CH${c + 1}`);
+    return labels;
+  }
+  const labels = [];
+  ctx.members.forEach((m, i) => {
+    const count = ctx.memberChannels[i] || 0;
+    for (let c = 0; c < count; c++) labels.push(`G${m + 1}-CH${c + 1}`);
+  });
+  return labels;
+}
+
+// ===============================
+// TIMELINE RENDER
+// ===============================
+function renderTimeline() {
+  const g = G();
+  if (g.frameData.length === 0) {
+    document.getElementById("timeline").innerHTML = "Timeline will appear here";
+    updateActionButtons();
+    return;
+  }
+  const labels = channelLabels(g);
+  const rows = ["<table><tr><th>Frame</th>"];
+  for (let c = 0; c < g.channelCount; c++) {
+    rows.push(`<th>${labels[c]}</th>`);
+  }
+  rows.push("<th>Actions</th></tr>");
+  for (let index = 0; index < g.frameData.length; index++) {
+    const frame = g.frameData[index];
+    const activeDelay = getFrameDelay(index + 1);
+    rows.push(`<tr><td class="frame-num">${index + 1}</td>`);
+    for (let c = 0; c < frame.state.length; c++) {
+      rows.push(`<td><div class="cell ${frame.state[c] ? "on" : ""}" data-frame="${index}" data-channel="${c}"></div></td>`);
+    }
+    rows.push(
+      `<td style="white-space:nowrap;">` +
+      `<span style="color:#aaa;font-size:12px;margin-right:8px;">${activeDelay}ms</span>` +
+      `<button class="btn-secondary btn-small" data-action="copy" data-frame="${index}" title="Copy this frame into a new frame right after it">📋 Copy</button>` +
+      `<button class="btn-danger btn-small" data-action="remove" data-frame="${index}">Remove</button>` +
+      `</td></tr>`
+    );
+  }
+  rows.push("</table>");
+  document.getElementById("timeline").innerHTML = rows.join("");
+  updateActionButtons();
+  renderPreviewLights();
+  updatePreviewLights();
+}
+
+// ===============================
+// LIVE PREVIEW
+// ===============================
+let previewTimer = null;
+let previewFrameIndex = 0;
+let previewSequence = [];
+
+function renderPreviewLights() {
+  const channels = G().channelCount;
+  const container = document.getElementById("previewLights");
+  if (channels < 1) {
+    container.innerHTML = "No channels created";
+    return;
+  }
+  container.style.gridTemplateColumns = `repeat(${Math.min(channels, 16)}, 1fr)`;
+  const cells = [];
+  for (let c = 0; c < channels; c++) {
+    cells.push(`<div class="preview-cell" id="previewCell${c}"></div>`);
+  }
+  container.innerHTML = cells.join("");
+}
+
+function updatePreviewLights() {
+  const g = G();
+  if (g.frameData.length === 0) {
+    document.getElementById("previewInfo").textContent = "";
+    return;
+  }
+  const frameIndex = Math.min(previewFrameIndex, g.frameData.length - 1);
+  const frame = g.frameData[frameIndex];
+  for (let c = 0; c < g.channelCount; c++) {
+    const el = document.getElementById("previewCell" + c);
+    if (!el) continue;
+    const on = frame && frame.state[c];
+    el.classList.toggle("on", !!on);
+  }
+  document.getElementById("previewInfo").textContent =
+    `${g.name} — Frame: ${frameIndex + 1} / ${g.frameData.length}`;
+}
+
+function buildPreviewSequence() {
+  const g = G();
+  const sequence = [];
+  let frame = 0;
+  while (frame < g.frameData.length) {
+    let repeated = false;
+    for (const r of g.repeatRegions) {
+      if (r.end >= r.start && frame === r.start - 1) {
+        for (let x = 0; x < r.count; x++) {
+          for (let f = r.start - 1; f < r.end; f++) {
+            sequence.push(f);
+          }
+        }
+        frame = r.end;
+        repeated = true;
+        break;
+      }
+    }
+    if (!repeated) {
+      sequence.push(frame);
+      frame++;
+    }
+  }
+  return sequence;
+}
+
+function stepPreview() {
+  const g = G();
+  if (previewSequence.length === 0) return;
+  if (previewFrameIndex >= previewSequence.length) {
+    previewFrameIndex = 0;
+  }
+  const frame = previewSequence[previewFrameIndex];
+  for (let c = 0; c < g.channelCount; c++) {
+    const el = document.getElementById("previewCell" + c);
+    if (!el) continue;
+    const on = g.frameData[frame] && g.frameData[frame].state[c];
+    el.classList.toggle("on", !!on);
+  }
+  document.getElementById("previewInfo").textContent =
+    `${g.name} — Frame: ${frame + 1} / ${g.frameData.length} (Playing...)`;
+  const delay = getFrameDelay(frame + 1);
+  previewFrameIndex++;
+  previewTimer = setTimeout(stepPreview, delay);
+}
+
+function playPreview() {
+  if (G().frameData.length === 0) {
+    showToast("Create timeline first", "error");
+    return;
+  }
+  stopPreview();
+  renderPreviewLights();
+  previewSequence = buildPreviewSequence();
+  previewFrameIndex = 0;
+  stepPreview();
+}
+
+function stopPreview() {
+  if (previewTimer) {
+    clearTimeout(previewTimer);
+    previewTimer = null;
+  }
+  previewFrameIndex = 0;
+  const g = (editMode === "sync") ? syncGroups[activeSync] : groups[activeGroup];
+  if (g && g.frameData.length > 0) {
+    document.getElementById("previewInfo").textContent =
+      `${g.name} — Frame: 1 / ${g.frameData.length}`;
+  }
+}
+
+// ===============================
+// FRAME CONTROL
+// ===============================
+function toggleCell(cellEl, frame, channel) {
+  const g = G();
+  g.frameData[frame].state[channel] ^= 1;
+  cellEl.classList.toggle("on", g.frameData[frame].state[channel] === 1);
+  updatePreviewLights();
+}
+
+function confirmAddFrames() {
+  const g = G();
+  const amount = validateFrameCount(parseInt(document.getElementById("addFramesInput").value));
+  for (let i = 0; i < amount; i++) {
+    g.frameData.push({ state: new Array(g.channelCount).fill(0) });
+  }
+  renderTimeline();
+  renderSyncCard();
+  renderSchedulingOptions();
+  closeModal("addFramesModal");
+  showToast(`Added ${amount} frames`);
+}
+
+function removeFrame(index) {
+  G().frameData.splice(index, 1);
+  renderTimeline();
+  renderSyncCard();
+  renderSchedulingOptions();
+  showToast("Frame removed");
+}
+
+function copyFrameAfter(index) {
+  const g = G();
+  const copy = { state: [...g.frameData[index].state] };
+  g.frameData.splice(index + 1, 0, copy);
+  renderTimeline();
+  renderSyncCard();
+  renderSchedulingOptions();
+  showToast(`Copied frame ${index + 1} into frame ${index + 2}`);
+}
+
+function confirmRemoveFrames() {
+  const g = G();
+  const start = parseInt(document.getElementById("removeStartInput").value);
+  const end = parseInt(document.getElementById("removeEndInput").value);
+  const range = validateFrameRange(start, end, g.frameData.length);
+  if (!range) {
+    showModalError("removeFramesModal", "Invalid range. End must be >= Start.");
+    return;
+  }
+  g.frameData.splice(range.start - 1, range.end - range.start + 1);
+  renderTimeline();
+  renderSyncCard();
+  renderSchedulingOptions();
+  closeModal("removeFramesModal");
+  showToast(`Removed frames ${range.start}-${range.end}`);
+}
+
+function confirmCopyFrames() {
+  const g = G();
+  const start = parseInt(document.getElementById("copyStartInput").value);
+  const end = parseInt(document.getElementById("copyEndInput").value);
+  const range = validateFrameRange(start, end, g.frameData.length);
+  if (!range) {
+    showModalError("copyFramesModal", "Invalid range. End must be >= Start.");
+    return;
+  }
+  copiedFrames = g.frameData.slice(range.start - 1, range.end).map(f => ({
+    state: [...f.state]
+  }));
+  updatePasteButton();
+  closeModal("copyFramesModal");
+  showToast(`Copied ${copiedFrames.length} frames`);
+}
+
+function confirmPasteFrames() {
+  const g = G();
+  if (!copiedFrames || copiedFrames.length === 0) {
+    showModalError("pasteModal", "Nothing to paste");
+    return;
+  }
+  if (copiedFrames[0].state.length !== g.channelCount) {
+    showModalError("pasteModal", "Copied frames don't match this timeline's channel count");
+    return;
+  }
+  const pasteAt = validatePasteAfter(document.getElementById("pasteAfterInput").value, g.frameData.length);
+  const framesToPaste = copiedFrames.map(f => ({ state: [...f.state] }));
+  g.frameData.splice(pasteAt - 1, 0, ...framesToPaste);
+  renderTimeline();
+  renderSyncCard();
+  renderSchedulingOptions();
+  closeModal("pasteModal");
+  showToast(`Pasted ${copiedFrames.length} frames starting at frame ${pasteAt}`);
+}
+
+// ===============================
+// DELAY SYSTEM
+// ===============================
+function getFrameDelay(frameNumber) {
+  return delayForFrame(G(), frameNumber);
+}
+
+function setDefaultDelay() {
+  const g = G();
+  g.defaultDelay = validateDelay(parseInt(document.getElementById("defaultDelay").value));
+  document.getElementById("defaultDelay").value = g.defaultDelay;
+  renderTimeline();
+  renderSyncCard();
+  renderSchedulingOptions();
+  showToast(`Default delay set to ${g.defaultDelay}ms for ${g.name}`);
+}
+
+function confirmAddDelayRegion() {
+  const g = G();
+  const start = parseInt(document.getElementById("delayStartInput").value);
+  const end = parseInt(document.getElementById("delayEndInput").value);
+  const delay = parseInt(document.getElementById("delayValueInput").value);
+  const range = validateFrameRange(start, end, g.frameData.length);
+  if (!range) {
+    showModalError("delayRegionModal", "Invalid range. End must be >= Start.");
+    return;
+  }
+  // Check for overlapping delay regions
+  for (const r of g.delayRegions) {
+    if (range.start <= r.end && range.end >= r.start) {
+      showModalError("delayRegionModal",
+        `⚠ Frames ${range.start}-${range.end} overlap the existing delay region ${r.start}-${r.end} (${r.delay}ms). Choose different frames.`);
+      return;
+    }
+  }
+  const validDelay = validateDelay(delay);
+  g.delayRegions.push({ start: range.start, end: range.end, delay: validDelay });
+  renderDelayRegions();
+  renderTimeline();
+  renderSyncCard();
+  renderSchedulingOptions();
+  closeModal("delayRegionModal");
+  showToast("Delay region added");
+}
+
+function renderDelayRegions() {
+  const table = document.getElementById("delayTable");
+  if (!table) return;
+  let html = `
+    <tr>
+      <th>Start Frame</th>
+      <th>End Frame</th>
+      <th>Delay</th>
+      <th>Action</th>
+    </tr>
+  `;
+  G().delayRegions.forEach((r, index) => {
+    html += `
+      <tr>
+        <td>${r.start}</td>
+        <td>${r.end}</td>
+        <td>${r.delay} ms</td>
+        <td>
+          <button class="btn-danger btn-small" onclick="removeDelayRegion(${index})">Remove</button>
+        </td>
+      </tr>
+    `;
+  });
+  table.innerHTML = html;
+}
+
+function removeDelayRegion(index) {
+  G().delayRegions.splice(index, 1);
+  renderDelayRegions();
+  renderTimeline();
+  renderSyncCard();
+  renderSchedulingOptions();
+  showToast("Delay region removed");
+}
+
+// ===============================
+// REPEAT REGION SYSTEM
+// ===============================
+function confirmAddRepeatRegion() {
+  const g = G();
+  const start = parseInt(document.getElementById("repeatStartInput").value);
+  const end = parseInt(document.getElementById("repeatEndInput").value);
+  const count = parseInt(document.getElementById("repeatCountInput").value);
+  const range = validateFrameRange(start, end, g.frameData.length);
+  if (!range) {
+    showModalError("repeatRegionModal", "Invalid range. End must be >= Start.");
+    return;
+  }
+  for (const r of g.repeatRegions) {
+    if (range.start <= r.end && range.end >= r.start) {
+      showModalError("repeatRegionModal",
+        `⚠ Frames ${range.start}-${range.end} overlap the existing repeat region ${r.start}-${r.end}. Choose different frames.`);
+      return;
+    }
+  }
+  const validCount = validateRepeatCount(count);
+  g.repeatRegions.push({ start: range.start, end: range.end, count: validCount });
+  renderRepeatRegions();
+  renderSyncCard();
+  renderSchedulingOptions();
+  closeModal("repeatRegionModal");
+  showToast("Repeat region added");
+}
+
+function renderRepeatRegions() {
+  const table = document.getElementById("repeatTable");
+  if (!table) return;
+  let html = `
+    <tr>
+      <th>Start Frame</th>
+      <th>End Frame</th>
+      <th>Repeat Count</th>
+      <th>Action</th>
+    </tr>
+  `;
+  G().repeatRegions.forEach((r, index) => {
+    html += `
+      <tr>
+        <td>${r.start}</td>
+        <td>${r.end}</td>
+        <td>${r.count}x</td>
+        <td>
+          <button class="btn-purple btn-small" onclick="removeRepeatRegion(${index})">Remove</button>
+        </td>
+      </tr>
+    `;
+  });
+  table.innerHTML = html;
+}
+
+function removeRepeatRegion(index) {
+  G().repeatRegions.splice(index, 1);
+  renderRepeatRegions();
+  renderSyncCard();
+  renderSchedulingOptions();
+  showToast("Repeat region removed");
+}
+
+// =====================================
+// PROJECT SAVE / IMPORT
+// =====================================
+function saveProject() {
+  const projectData = {
+    projectName: document.getElementById("projectName").value,
+    board: document.getElementById("board").value,
+    pinMode: document.getElementById("pinMode").value,
+    frameCount: document.getElementById("frameCount").value,
+    activeGroup: activeGroup,
+    groups: groups,
+    syncGroups: syncGroups
+  };
+  const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: "application/json" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  const name = projectData.projectName || "My_Project";
+  link.download = name.replace(/\s+/g, "_") + ".json";
+  link.click();
+  URL.revokeObjectURL(link.href);
+  showToast("Project saved!");
+}
+
+function importProject(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      stopPreview();
+      document.getElementById("projectName").value = data.projectName || "";
+      document.getElementById("board").value = data.board || "Arduino UNO";
+      document.getElementById("pinMode").value = data.pinMode || "safe";
+      document.getElementById("frameCount").value = data.frameCount || 10;
+      if (Array.isArray(data.groups) && data.groups.length > 0) {
+        groups = data.groups.map((g, i) => ({
+          name: "Group " + (i + 1),
+          srModel: shiftRegisterModels[g.srModel] ? g.srModel : "74HC595",
+          regCount: validateRegCount(g.regCount),
+          dataPin: g.dataPin || "",
+          clockPin: g.clockPin || "",
+          latchPin: g.latchPin || "",
+          channelCount: parseInt(g.channelCount) || 0,
+          frameData: Array.isArray(g.frameData) ? g.frameData : [],
+          defaultDelay: validateDelay(g.defaultDelay || 500),
+          delayRegions: Array.isArray(g.delayRegions) ? g.delayRegions : [],
+          repeatRegions: Array.isArray(g.repeatRegions) ? g.repeatRegions : [],
+          playWhen: g.playWhen || "beginning",
+          playAfter: Array.isArray(g.playAfter) ? g.playAfter : [],
+          playWith: Array.isArray(g.playWith) ? g.playWith.map(pw => typeof pw === "number" ? {type:"group",index:pw} : pw) : [],
+          ownLoopCount: (typeof g.ownLoopCount === "number" && g.ownLoopCount >= 1) ? Math.floor(g.ownLoopCount) : 1
+        }));
+        activeGroup = Math.min(parseInt(data.activeGroup) || 0, groups.length - 1);
+      } else {
+        const g = makeGroup("Group 1");
+        g.srModel = shiftRegisterModels[data.srModel] ? data.srModel : "74HC595";
+        g.regCount = validateRegCount(data.regCount);
+        g.dataPin = data.dataPin || "";
+        g.clockPin = data.clockPin || "";
+        g.latchPin = data.latchPin || "";
+        g.channelCount = parseInt(data.channelCount) || 0;
+        g.frameData = Array.isArray(data.frameData) ? data.frameData : [];
+        g.defaultDelay = validateDelay(data.defaultDelay || 500);
+        g.delayRegions = Array.isArray(data.delayRegions) ? data.delayRegions : [];
+        g.repeatRegions = Array.isArray(data.repeatRegions) ? data.repeatRegions : [];
+        groups = [g];
+        activeGroup = 0;
+      }
+      
+      let rawSyncs = [];
+      if (Array.isArray(data.syncGroups)) rawSyncs = data.syncGroups;
+      else if (data.sync && typeof data.sync === "object") rawSyncs = [data.sync];
+      syncGroups = rawSyncs.map((s, i) => ({
+        name: "Sync " + (i + 1),
+        members: (Array.isArray(s.members) ? s.members : []).filter(m => Number.isInteger(m) && m >= 0 && m < groups.length),
+        memberChannels: Array.isArray(s.memberChannels) ? s.memberChannels : [],
+        restMode: s.restMode === "off" ? "off" : "run",
+        channelCount: parseInt(s.channelCount) || 0,
+        frameData: Array.isArray(s.frameData) ? s.frameData : [],
+        defaultDelay: validateDelay(s.defaultDelay || 500),
+        delayRegions: Array.isArray(s.delayRegions) ? s.delayRegions : [],
+        repeatRegions: Array.isArray(s.repeatRegions) ? s.repeatRegions : [],
+        playWhen: s.playWhen || "beginning",
+        playAfter: Array.isArray(s.playAfter) ? s.playAfter : [],
+        playWith: Array.isArray(s.playWith) ? s.playWith.map(pw => typeof pw === "number" ? {type:"group",index:pw} : pw) : [],
+        ownLoopCount: (typeof s.ownLoopCount === "number" && s.ownLoopCount >= 1) ? Math.floor(s.ownLoopCount) : 1
+      }));
+      syncGroups.forEach(s => { if (s.members.length < 2) resetSyncTimeline(s); });
+      activeSync = 0;
+      editMode = "group";
+      copiedFrames = null;
+      updatePins();
+      setActiveGroup(activeGroup);
+      showToast("Project imported successfully!");
+    } catch (err) {
+      console.error("Import error:", err);
+      showToast("Failed to import project. Invalid file format.", "error");
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = "";
+}
+
+// =====================================
+// ARDUINO CODE GENERATOR
+// =====================================
+function pinToNumber(p) {
+  if (p.startsWith("GPIO")) return p.replace("GPIO", "");
+  if (p.startsWith("D")) return p.replace("D", "");
+  return p;
+}
+
+// Get a unique identifier for a group/sync
+function getItemId(type, index) {
+  return type === "group" ? `g${index + 1}` : `s${index + 1}`;
+}
+
+// Build dependency resolution order using topological sort
+function buildPlayOrder() {
+  const allItems = [];
+  
+  // Add all groups
+  groups.forEach((g, i) => {
+    allItems.push({
+      type: "group",
+      index: i,
+      id: `g${i + 1}`,
+      item: g,
+      playWhen: g.playWhen,
+      playAfter: g.playAfter
+    });
+  });
+  
+  // Add all sync groups
+  syncGroups.forEach((s, i) => {
+    allItems.push({
+      type: "sync",
+      index: i,
+      id: `s${i + 1}`,
+      item: s,
+      playWhen: s.playWhen,
+      playAfter: s.playAfter
+    });
+  });
+  
+  // Separate into "beginning" and "after" items
+  const beginningItems = allItems.filter(item => item.playWhen === "beginning");
+  const afterItems = allItems.filter(item => item.playWhen === "after");
+  
+  // Auto-chain: "after" items with empty playAfter get auto-assigned
+  // to play after the last resolved item in creation order
+  // 1. Build resolved order: beginning items first, then explicitly scheduled items
+  const resolvedKeys = new Set();
+  const resolvedOrder = [];
+  
+  beginningItems.forEach(item => {
+    resolvedKeys.add(`${item.type}-${item.index}`);
+    resolvedOrder.push(item);
+  });
+  
+  // Resolve explicitly scheduled items first (those with playAfter entries)
+  const explicitAfter = afterItems.filter(item => item.playAfter.length > 0);
+  const unsetAfter = afterItems.filter(item => item.playAfter.length === 0);
+  
+  let remaining = explicitAfter.slice();
+  let safety = 100;
+  while (remaining.length > 0 && safety-- > 0) {
+    const nextBatch = [];
+    const stillWaiting = [];
+    remaining.forEach(item => {
+      const allDepsMet = item.playAfter.every(dep => resolvedKeys.has(`${dep.type}-${dep.index}`));
+      if (allDepsMet) nextBatch.push(item);
+      else stillWaiting.push(item);
+    });
+    nextBatch.forEach(item => {
+      resolvedKeys.add(`${item.type}-${item.index}`);
+      resolvedOrder.push(item);
+    });
+    remaining = stillWaiting;
+    if (nextBatch.length === 0) break;
+  }
+  // Add any unresolved explicit items
+  remaining.forEach(item => {
+    resolvedKeys.add(`${item.type}-${item.index}`);
+    resolvedOrder.push(item);
+  });
+  
+  // Items with "After Groups" selected but no specific group chosen are left
+  // as-is (no automatic dependency assignment). They simply won't start
+  // playing until the user explicitly selects a group to play after.
+  unsetAfter.forEach(item => {
+    resolvedKeys.add(`${item.type}-${item.index}`);
+    resolvedOrder.push(item);
+  });
+  
+  // Rebuild afterItems to include auto-chained items
+  const finalAfterItems = allItems.filter(item => item.playWhen === "after");
+  
+  return { beginningItems, afterItems: finalAfterItems, allItems };
+}
+
+// Find how many full loops of a given group/sync must play before its
+// dependent (if any) is allowed to start. When nothing else is scheduled
+// to play after it (it's the last item in its chain), fall back to its
+// own Loop Count setting instead of always defaulting to 1.
+function getRequiredLoops(type, index, groupList, syncList) {
+  const ownItem = (type === "group" ? groupList : syncList)[index];
+  let loops = (ownItem && ownItem.ownLoopCount) || 1;
+  groupList.forEach(g => {
+    if (g.playWhen === "after" && g.playAfter.length > 0) {
+      const dep = g.playAfter[0];
+      if (dep.type === type && dep.index === index) loops = dep.loops || 1;
+    }
+  });
+  syncList.forEach(s => {
+    if (s.playWhen === "after" && s.playAfter.length > 0) {
+      const dep = s.playAfter[0];
+      if (dep.type === type && dep.index === index) loops = dep.loops || 1;
+    }
+  });
+  return loops;
+}
+
+// Simple lightweight code for single-group, no-sync projects (smaller binary)
+function buildSimpleArduinoCode(project, board, g) {
+  const now = new Date();
+  const timestamp = now.toLocaleString();
+  const model = shiftRegisterModels[g.srModel];
+  const bytesPerFrame = Math.ceil(g.channelCount / 8);
+
+  let code = `
+/*
+Shift Register LED Designer
+Project  : ${project}
+Board    : ${board}
+Generated: ${timestamp}
+Shift IC : ${g.srModel} x${g.regCount} (${model.bits}-bit each, ${model.desc})
+Channels : ${g.channelCount}
+Frames   : ${g.frameData.length}
+DATA=${g.dataPin}  CLOCK=${g.clockPin}  LATCH=${g.latchPin}
+8-BIT PACKED DATA, CHAINED SHIFT-OUT
+*/
+#include <Arduino.h>
+
+#define DATA_PIN  ${pinToNumber(g.dataPin)}
+#define CLOCK_PIN ${pinToNumber(g.clockPin)}
+#define LATCH_PIN ${pinToNumber(g.latchPin)}
+
+#define TOTAL_FRAMES ${g.frameData.length}
+#define BYTES_PER_FRAME ${bytesPerFrame}
+#define DEFAULT_DELAY ${g.defaultDelay}
+
+const uint8_t animation[TOTAL_FRAMES][BYTES_PER_FRAME] PROGMEM =
+{
+`;
+  g.frameData.forEach(frame => {
+    code += "{";
+    for (let b = 0; b < bytesPerFrame; b++) {
+      let value = 0;
+      for (let bit = 0; bit < 8; bit++) {
+        const led = (b * 8) + bit;
+        if (led < g.channelCount && frame.state[led]) value |= (1 << bit);
+      }
+      code += "0b" + value.toString(2).padStart(8, "0");
+      if (b < bytesPerFrame - 1) code += ",";
+    }
+    code += "},\n";
+  });
+  code += `};
+
+
+struct DelayRegion
+{
+uint16_t start;
+uint16_t end;
+uint16_t delay;
+};
+
+const DelayRegion delayList[] PROGMEM =
+{
+`;
+  g.delayRegions.forEach(r => { code += `{${r.start},${r.end},${r.delay}},\n`; });
+  code += `
+};
+
+#define DELAY_COUNT ${g.delayRegions.length}
+
+
+struct RepeatRegion
+{
+uint16_t start;
+uint16_t end;
+uint16_t count;
+};
+
+const RepeatRegion repeatList[] PROGMEM =
+{
+`;
+  g.repeatRegions.forEach(r => { code += `{${r.start},${r.end},${r.count}},\n`; });
+  code += `
+};
+
+#define REPEAT_COUNT ${g.repeatRegions.length}
+
+
+void setup()
+{
+
+pinMode(DATA_PIN,OUTPUT);
+pinMode(CLOCK_PIN,OUTPUT);
+pinMode(LATCH_PIN,OUTPUT);
+
+digitalWrite(CLOCK_PIN,LOW);
+digitalWrite(LATCH_PIN,LOW);
+
+}
+
+
+void playFrame(uint16_t frame)
+{
+
+for(int8_t b=BYTES_PER_FRAME-1;b>=0;b--)
+{
+
+uint8_t value=pgm_read_byte(&animation[frame][b]);
+
+for(int8_t bit=7;bit>=0;bit--)
+{
+
+digitalWrite(DATA_PIN,(value>>bit)&0x01);
+digitalWrite(CLOCK_PIN,HIGH);
+digitalWrite(CLOCK_PIN,LOW);
+
+}
+
+}
+
+digitalWrite(LATCH_PIN,HIGH);
+digitalWrite(LATCH_PIN,LOW);
+
+}
+
+
+uint16_t getDelay(uint16_t frame)
+{
+uint16_t d=DEFAULT_DELAY;
+
+for(uint8_t i=0;i<DELAY_COUNT;i++)
+{
+
+if(
+frame>=pgm_read_word(&delayList[i].start)
+&&
+frame<=pgm_read_word(&delayList[i].end)
+)
+{
+
+d=pgm_read_word(&delayList[i].delay);
+
+}
+
+}
+
+return d;
+
+}
+
+
+void loop()
+{
+
+uint16_t frame=0;
+
+while(frame<TOTAL_FRAMES)
+{
+
+bool repeated=false;
+
+for(uint8_t r=0;r<REPEAT_COUNT;r++)
+{
+
+uint16_t s=
+pgm_read_word(&repeatList[r].start);
+
+uint16_t e=
+pgm_read_word(&repeatList[r].end);
+
+uint16_t c=
+pgm_read_word(&repeatList[r].count);
+
+if(frame==s-1)
+{
+
+for(uint16_t x=0;x<c;x++)
+{
+
+for(uint16_t f=s-1;f<e;f++)
+{
+
+playFrame(f);
+delay(getDelay(f+1));
+
+}
+
+}
+
+frame=e;
+repeated=true;
+
+}
+
+}
+
+if(!repeated)
+{
+
+playFrame(frame);
+delay(getDelay(frame+1));
+frame++;
+
+}
+
+}
+
+}
+`;
+  return code;
+}
+
+function buildArduinoCode(project, board, groupList, syncList) {
+  // Use simple lightweight code for single-group projects (smaller binary)
+  if (groupList.length === 1 && syncList.length === 0) {
+    return buildSimpleArduinoCode(project, board, groupList[0]);
+  }
+  
+  const { beginningItems, afterItems, allItems } = buildPlayOrder();
+  
+  // Determine whether the whole design only has ONE main scheduled group/sync
+  // (an item that isn't just an unset "After Groups" placeholder waiting to be
+  // used as a Play With helper). When that's the case, any Play With helper
+  // groups attached to that single main item should keep looping continuously
+  // forever - they should never be stopped/reset just because the main group
+  // finished its own Loop Count or because the whole schedule looped back to
+  // the beginning, since there is nothing else for the main group to hand off
+  // to anyway. With 2+ main groups/syncs, the existing stop/restart handoff
+  // behavior is left exactly as it was.
+  const isMainScheduleItem = (item) => !(item.playWhen === "after" && item.playAfter.length === 0);
+  const singleMainMode = allItems.filter(isMainScheduleItem).length === 1;
+  const mainGroupIdx = new Set();
+  const mainSyncIdx = new Set();
+  allItems.forEach(it => {
+    if (!isMainScheduleItem(it)) return;
+    if (it.type === "group") mainGroupIdx.add(it.index); else mainSyncIdx.add(it.index);
+  });
+  
+  const now = new Date();
+  const timestamp = now.toLocaleString();
+
+  let code = `
+/*
+Shift Register LED Designer
+Project  : ${project}
+Board    : ${board}
+Generated: ${timestamp}
+Groups   : ${groupList.length}
+Sync Groups: ${syncList.length}
+`;
+
+  groupList.forEach((g, i) => {
+    const model = shiftRegisterModels[g.srModel];
+    const scheduleInfo = g.playWhen === "beginning" ? "FROM BEGINNING" : 
+      `AFTER: ${g.playAfter.map(a => `${a.type === "group" ? `Group ${a.index + 1}` : `Sync ${a.index + 1}`}${(a.loops || 1) > 1 ? ` x${a.loops} loops` : ""}`).join(", ")}`;
+    const playWithInfo = g.playWith && g.playWith.length > 0 ? 
+      `, PLAY WITH: ${g.playWith.map(pw => pw.type === "group" ? `Group ${pw.index + 1}` : `Sync ${pw.index + 1}`).join(", ")}` : "";
+    const delayInfo = g.delayRegions.length > 0 ? `, ${g.delayRegions.length} delay region(s)` : "";
+    const repeatInfo = g.repeatRegions.length > 0 ? `, ${g.repeatRegions.length} repeat region(s)` : "";
+    code += `Group ${i + 1} : ${g.srModel} x${g.regCount} (${model.bits}-bit), ${g.channelCount} ch, ${g.frameData.length} frames, delay=${g.defaultDelay}ms${delayInfo}${repeatInfo}, ~${fmtSeconds(playTimeMs(g))}, DATA=${g.dataPin} CLOCK=${g.clockPin} LATCH=${g.latchPin}, ${scheduleInfo}${playWithInfo}\n`;
+  });
+
+  syncList.forEach((s, k) => {
+    const scheduleInfo = s.playWhen === "beginning" ? "FROM BEGINNING" : 
+      `AFTER: ${s.playAfter.map(a => `${a.type === "group" ? `Group ${a.index + 1}` : `Sync ${a.index + 1}`}${(a.loops || 1) > 1 ? ` x${a.loops} loops` : ""}`).join(", ")}`;
+    const delayInfo = s.delayRegions.length > 0 ? `, ${s.delayRegions.length} delay region(s)` : "";
+    const repeatInfo = s.repeatRegions.length > 0 ? `, ${s.repeatRegions.length} repeat region(s)` : "";
+    const playWithInfo = s.playWith && s.playWith.length > 0 ? 
+      `, PLAY WITH: ${s.playWith.map(pw => pw.type === "group" ? `Group ${pw.index + 1}` : `Sync ${pw.index + 1}`).join(", ")}` : "";
+    code += `Sync ${k + 1}   : groups [${s.members.map(m => m + 1).join(",")}] merged, ${s.channelCount} ch, ${s.frameData.length} frames, delay=${s.defaultDelay}ms${delayInfo}${repeatInfo}, ~${fmtSeconds(playTimeMs(s))}, ${scheduleInfo}${playWithInfo}\n`;
+  });
+
+  // Build play order summary using topological sort for correct execution order
+  code += `\nPlay Order:\n`;
+  
+  // Topological sort to show actual execution order
+  const resolved = [];
+  const resolvedKeys = new Set();
+  
+  // Add beginning items first
+  beginningItems.forEach(item => {
+    const key = `${item.type}-${item.index}`;
+    resolved.push(item);
+    resolvedKeys.add(key);
+  });
+  
+  // Keep resolving until all after items are placed
+  let remaining = afterItems.slice();
+  let safety = 100;
+  while (remaining.length > 0 && safety-- > 0) {
+    const nextBatch = [];
+    const stillWaiting = [];
+    remaining.forEach(item => {
+      const allDepsMet = item.playAfter.every(dep => resolvedKeys.has(`${dep.type}-${dep.index}`));
+      if (allDepsMet) {
+        nextBatch.push(item);
+      } else {
+        stillWaiting.push(item);
+      }
+    });
+    nextBatch.forEach(item => {
+      const key = `${item.type}-${item.index}`;
+      resolved.push(item);
+      resolvedKeys.add(key);
+    });
+    remaining = stillWaiting;
+    if (nextBatch.length === 0) break; // prevent infinite loop
+  }
+  // Add any unresolved items at the end
+  remaining.forEach(item => resolved.push(item));
+  
+  const pwName = (pw) => pw.type === "group" ? `Group ${pw.index + 1}` : `Sync ${pw.index + 1}`;
+  let stepNum = 1;
+  resolved.forEach(item => {
+    const name = item.type === "group" ? `Group ${item.index + 1}` : `Sync ${item.index + 1}`;
+    const src = item.type === "group" ? groupList[item.index] : syncList[item.index];
+    let extra = "";
+    if (src.playWith && src.playWith.length > 0) {
+      extra = ` (with ${src.playWith.map(pw => pwName(pw)).join(", ")} in parallel)`;
+    }
+    if (item.playWhen === "beginning") {
+      code += `  ${stepNum}. START -> ${name}${extra}\n`;
+    } else {
+      const waitFor = item.playAfter.map(d => `${d.type === "group" ? `Group ${d.index + 1}` : `Sync ${d.index + 1}`}${(d.loops || 1) > 1 ? ` x${d.loops} loops` : ""}`).join(", ");
+      code += `  ${stepNum}. AFTER [${waitFor}] -> ${name}${extra}\n`;
+    }
+    stepNum++;
+  });
+  code += `  ${stepNum}. ALL DONE -> RESTART\n`;
+
+  code += `
+8-BIT PACKED DATA, CHAINED SHIFT-OUT, NON-BLOCKING SCHEDULER
+*/
+
+#include <Arduino.h>
+
+struct DelayRegion
+{
+uint16_t start;
+uint16_t end;
+uint16_t delay;
+};
+
+struct RepeatRegion
+{
+uint16_t start;
+uint16_t end;
+uint16_t count;
+};
+
+// ================= FORWARD DECLARATIONS =================
+`;
+
+  // Generate forward declarations for ALL functions so cross-references compile
+  groupList.forEach((g, i) => {
+    const n = i + 1;
+    code += `void g${n}_playFrame(uint16_t frame);
+void g${n}_clear();
+uint16_t g${n}_getDelay(uint16_t frame);
+void g${n}_reset();
+void g${n}_start();
+void g${n}_startLooping();
+void g${n}_stopLooping();
+void g${n}_tick();
+`;
+  });
+  syncList.forEach((s, i) => {
+    const n = i + 1;
+    code += `void s${n}_playFrame(uint16_t frame);
+void s${n}_clear();
+uint16_t s${n}_getDelay(uint16_t frame);
+void s${n}_reset();
+void s${n}_start();
+void s${n}_startLooping();
+void s${n}_stopLooping();
+void s${n}_tick();
+`;
+  });
+  // Forward declare helper functions
+  groupList.forEach((g, i) => {
+    if (g.playWith && g.playWith.length > 0) {
+      code += `void g${i + 1}_startPlayWithGroups();\nvoid g${i + 1}_stopPlayWithGroups();\n`;
+    }
+  });
+  syncList.forEach((s, i) => {
+    if (s.playWith && s.playWith.length > 0) {
+      code += `void s${i + 1}_startPlayWithGroups();\nvoid s${i + 1}_stopPlayWithGroups();\n`;
+    }
+  });
+  code += `void checkAndStartDependentItems();
+bool allItemsCompleted();
+void resetAllItems();
+`;
+
+  // ---------- per-group sections ----------
+  groupList.forEach((g, i) => {
+    const n = i + 1;
+    const bytesPerFrame = Math.ceil(g.channelCount / 8);
+    const requiredLoops = getRequiredLoops("group", i, groupList, syncList);
+    code += `
+// ================= GROUP ${n} =================
+
+#define G${n}_DATA_PIN  ${pinToNumber(g.dataPin)}
+#define G${n}_CLOCK_PIN ${pinToNumber(g.clockPin)}
+#define G${n}_LATCH_PIN ${pinToNumber(g.latchPin)}
+#define G${n}_TOTAL_FRAMES ${g.frameData.length}
+#define G${n}_BYTES_PER_FRAME ${bytesPerFrame}
+#define G${n}_DEFAULT_DELAY ${g.defaultDelay}
+#define G${n}_REQUIRED_LOOPS ${requiredLoops}
+
+`;
+    // FRAME DATA
+    code += `const uint8_t g${n}_animation[G${n}_TOTAL_FRAMES][G${n}_BYTES_PER_FRAME] PROGMEM =\n{\n`;
+    g.frameData.forEach(frame => {
+      code += "{";
+      for (let b = 0; b < bytesPerFrame; b++) {
+        let value = 0;
+        for (let bit = 0; bit < 8; bit++) {
+          const led = (b * 8) + bit;
+          if (led < g.channelCount && frame.state[led]) {
+            value |= (1 << bit);
+          }
+        }
+        code += "0b" + value.toString(2).padStart(8, "0");
+        if (b < bytesPerFrame - 1) code += ",";
+      }
+      code += "},\n";
+    });
+    code += `};\n`;
+    
+    // DELAY TABLE
+    code += `
+const DelayRegion g${n}_delayList[] PROGMEM =
+{
+`;
+    g.delayRegions.forEach(r => {
+      code += `{${r.start},${r.end},${r.delay}},\n`;
+    });
+    code += `
+};
+
+#define G${n}_DELAY_COUNT ${g.delayRegions.length}
+`;
+    // REPEAT TABLE
+    code += `
+const RepeatRegion g${n}_repeatList[] PROGMEM =
+{
+`;
+    g.repeatRegions.forEach(r => {
+      code += `{${r.start},${r.end},${r.count}},\n`;
+    });
+    code += `
+};
+
+#define G${n}_REPEAT_COUNT ${g.repeatRegions.length}
+`;
+    // PLAY FRAME
+    code += `
+void g${n}_playFrame(uint16_t frame)
+{
+for(int8_t b=G${n}_BYTES_PER_FRAME-1;b>=0;b--)
+{
+uint8_t value=pgm_read_byte(&g${n}_animation[frame][b]);
+for(int8_t bit=7;bit>=0;bit--)
+{
+digitalWrite(G${n}_DATA_PIN,(value>>bit)&0x01);
+digitalWrite(G${n}_CLOCK_PIN,HIGH);
+digitalWrite(G${n}_CLOCK_PIN,LOW);
+}
+}
+digitalWrite(G${n}_LATCH_PIN,HIGH);
+digitalWrite(G${n}_LATCH_PIN,LOW);
+}
+`;
+    // CLEAR
+    code += `
+void g${n}_clear()
+{
+digitalWrite(G${n}_DATA_PIN,LOW);
+for(uint8_t b=0;b<G${n}_BYTES_PER_FRAME*8;b++)
+{
+digitalWrite(G${n}_CLOCK_PIN,HIGH);
+digitalWrite(G${n}_CLOCK_PIN,LOW);
+}
+digitalWrite(G${n}_LATCH_PIN,HIGH);
+digitalWrite(G${n}_LATCH_PIN,LOW);
+}
+`;
+    // DELAY FUNCTION
+    code += `
+uint16_t g${n}_getDelay(uint16_t frame)
+{
+uint16_t d=G${n}_DEFAULT_DELAY;
+for(uint8_t i=0;i<G${n}_DELAY_COUNT;i++)
+{
+if(
+frame>=pgm_read_word(&g${n}_delayList[i].start)
+&&
+frame<=pgm_read_word(&g${n}_delayList[i].end)
+)
+{
+d=pgm_read_word(&g${n}_delayList[i].delay);
+}
+}
+return d;
+}
+`;
+    // STATE VARIABLES
+    code += `
+uint16_t g${n}_frame=0;
+bool g${n}_inRepeat=false;
+uint16_t g${n}_rs=0,g${n}_re=0,g${n}_rc=0,g${n}_rx=0,g${n}_rf=0;
+uint32_t g${n}_last=0;
+uint16_t g${n}_wait=0;
+uint16_t g${n}_holdFrame=0;
+bool g${n}_started=false;
+bool g${n}_cycled=false;
+bool g${n}_done=false;
+bool g${n}_looping=false;
+bool g${n}_scheduleDone=false;
+uint16_t g${n}_loopCount=0;
+
+void g${n}_reset()
+{
+g${n}_frame=0;
+g${n}_inRepeat=false;
+g${n}_holdFrame=0;
+g${n}_started=false;
+g${n}_cycled=false;
+g${n}_done=false;
+g${n}_looping=false;
+g${n}_scheduleDone=false;
+g${n}_loopCount=0;
+g${n}_wait=0;
+g${n}_last=millis();
+g${n}_clear();
+}
+
+void g${n}_start()
+{
+g${n}_started=true;
+g${n}_cycled=false;
+g${n}_done=false;
+g${n}_looping=false;
+g${n}_scheduleDone=false;
+g${n}_loopCount=0;
+g${n}_frame=0;
+g${n}_inRepeat=false;
+g${n}_holdFrame=0;
+g${n}_wait=0;
+g${n}_last=millis();
+}
+
+void g${n}_startLooping()
+{
+g${n}_started=true;
+g${n}_cycled=false;
+g${n}_done=false;
+g${n}_looping=true;
+g${n}_frame=0;
+g${n}_inRepeat=false;
+g${n}_holdFrame=0;
+g${n}_wait=0;
+g${n}_last=millis();
+}
+
+void g${n}_stopLooping()
+{
+g${n}_looping=false;
+g${n}_started=false;
+g${n}_cycled=false;
+g${n}_done=true;
+g${n}_frame=0;
+g${n}_inRepeat=false;
+g${n}_holdFrame=0;
+g${n}_wait=0;
+g${n}_clear();
+}
+
+void g${n}_tick()
+{
+if(!g${n}_started)return;
+if(g${n}_done)return;
+
+uint32_t now=millis();
+
+// Keep displaying the exact last frame until its delay is fully finished
+if(g${n}_cycled)
+{
+if(now-g${n}_last<g${n}_wait)
+{
+g${n}_playFrame(g${n}_holdFrame);
+return;
+}
+
+// If looping, restart immediately after the last-frame delay finishes
+if(g${n}_looping)
+{
+g${n}_frame=0;
+g${n}_cycled=false;
+}
+else
+{
+g${n}_loopCount++;
+if(g${n}_loopCount<G${n}_REQUIRED_LOOPS)
+{
+g${n}_frame=0;
+g${n}_cycled=false;
+}
+else
+{
+g${n}_done=true;
+g${n}_scheduleDone=true;
+g${n}_clear();
+`;
+    if (g.playWith && g.playWith.length > 0 && !singleMainMode) {
+      code += `g${n}_stopPlayWithGroups();\n`;
+    }
+    code += `}
+return;
+}
+}
+
+if(now-g${n}_last<g${n}_wait)return;
+g${n}_last=now;
+if(!g${n}_inRepeat)
+{
+for(uint8_t r=0;r<G${n}_REPEAT_COUNT;r++)
+{
+uint16_t s=pgm_read_word(&g${n}_repeatList[r].start);
+if(g${n}_frame==s-1)
+{
+g${n}_inRepeat=true;
+g${n}_rs=s;
+g${n}_re=pgm_read_word(&g${n}_repeatList[r].end);
+g${n}_rc=pgm_read_word(&g${n}_repeatList[r].count);
+g${n}_rx=0;
+g${n}_rf=s-1;
+break;
+}
+}
+}
+if(g${n}_inRepeat)
+{
+g${n}_holdFrame=g${n}_rf;
+g${n}_playFrame(g${n}_rf);
+g${n}_wait=g${n}_getDelay(g${n}_rf+1);
+g${n}_rf++;
+if(g${n}_rf>=g${n}_re)
+{
+g${n}_rx++;
+g${n}_rf=g${n}_rs-1;
+if(g${n}_rx>=g${n}_rc)
+{
+g${n}_inRepeat=false;
+g${n}_frame=g${n}_re;
+if(g${n}_frame>=G${n}_TOTAL_FRAMES){g${n}_cycled=true;}
+}
+}
+return;
+}
+g${n}_holdFrame=g${n}_frame;
+g${n}_playFrame(g${n}_frame);
+g${n}_wait=g${n}_getDelay(g${n}_frame+1);
+g${n}_frame++;
+if(g${n}_frame>=G${n}_TOTAL_FRAMES){g${n}_cycled=true;}
+}
+`;
+  });
+
+  // ---------- per-sync-group sections ----------
+  syncList.forEach((s, k) => {
+    const n = k + 1;
+    const memberBytes = s.memberChannels.map(c => Math.ceil(c / 8));
+    const bytesPerFrame = memberBytes.reduce((a, b) => a + b, 0);
+    const requiredLoops = getRequiredLoops("sync", k, groupList, syncList);
+    code += `
+// ================= SYNC ${n} (groups ${s.members.map(m => m + 1).join("+")} merged) =================
+
+#define S${n}_TOTAL_FRAMES ${s.frameData.length}
+#define S${n}_BYTES_PER_FRAME ${bytesPerFrame}
+#define S${n}_DEFAULT_DELAY ${s.defaultDelay}
+#define S${n}_REQUIRED_LOOPS ${requiredLoops}
+
+`;
+    // FRAME DATA
+    code += `const uint8_t s${n}_animation[S${n}_TOTAL_FRAMES][S${n}_BYTES_PER_FRAME] PROGMEM =\n{\n`;
+    s.frameData.forEach(frame => {
+      code += "{";
+      let byteIndex = 0;
+      let chOffset = 0;
+      s.members.forEach((m, mi) => {
+        const chCount = s.memberChannels[mi];
+        for (let b = 0; b < memberBytes[mi]; b++) {
+          let value = 0;
+          for (let bit = 0; bit < 8; bit++) {
+            const local = (b * 8) + bit;
+            if (local < chCount && frame.state[chOffset + local]) {
+              value |= (1 << bit);
+            }
+          }
+          code += "0b" + value.toString(2).padStart(8, "0");
+          byteIndex++;
+          if (byteIndex < bytesPerFrame) code += ",";
+        }
+        chOffset += chCount;
+      });
+      code += "},\n";
+    });
+    code += `};\n`;
+    
+    // DELAY TABLE
+    code += `
+const DelayRegion s${n}_delayList[] PROGMEM =
+{
+`;
+    s.delayRegions.forEach(r => {
+      code += `{${r.start},${r.end},${r.delay}},\n`;
+    });
+    code += `
+};
+
+#define S${n}_DELAY_COUNT ${s.delayRegions.length}
+`;
+    // REPEAT TABLE
+    code += `
+const RepeatRegion s${n}_repeatList[] PROGMEM =
+{
+`;
+    s.repeatRegions.forEach(r => {
+      code += `{${r.start},${r.end},${r.count}},\n`;
+    });
+    code += `
+};
+
+#define S${n}_REPEAT_COUNT ${s.repeatRegions.length}
+`;
+    // PLAY FRAME
+    code += `
+void s${n}_playFrame(uint16_t frame)
+{
+uint8_t value;
+`;
+    let offset = 0;
+    s.members.forEach((m, mi) => {
+      const gn = m + 1;
+      code += `// Group ${gn} slice
+for(int8_t b=${memberBytes[mi] - 1};b>=0;b--)
+{
+value=pgm_read_byte(&s${n}_animation[frame][${offset}+b]);
+for(int8_t bit=7;bit>=0;bit--)
+{
+digitalWrite(G${gn}_DATA_PIN,(value>>bit)&0x01);
+digitalWrite(G${gn}_CLOCK_PIN,HIGH);
+digitalWrite(G${gn}_CLOCK_PIN,LOW);
+}
+}
+`;
+      offset += memberBytes[mi];
+    });
+    s.members.forEach(m => {
+      code += `digitalWrite(G${m + 1}_LATCH_PIN,HIGH);\n`;
+    });
+    s.members.forEach(m => {
+      code += `digitalWrite(G${m + 1}_LATCH_PIN,LOW);\n`;
+    });
+    code += `}
+
+void s${n}_clear()
+{
+`;
+    s.members.forEach((m, mi) => {
+      code += `digitalWrite(G${m + 1}_DATA_PIN,LOW);
+for(uint8_t b=0;b<${memberBytes[mi]}*8;b++)
+{
+digitalWrite(G${m + 1}_CLOCK_PIN,HIGH);
+digitalWrite(G${m + 1}_CLOCK_PIN,LOW);
+}
+`;
+    });
+    s.members.forEach(m => {
+      code += `digitalWrite(G${m + 1}_LATCH_PIN,HIGH);
+digitalWrite(G${m + 1}_LATCH_PIN,LOW);
+`;
+    });
+    code += `}
+`;
+    // DELAY FUNCTION
+    code += `
+uint16_t s${n}_getDelay(uint16_t frame)
+{
+uint16_t d=S${n}_DEFAULT_DELAY;
+for(uint8_t i=0;i<S${n}_DELAY_COUNT;i++)
+{
+if(
+frame>=pgm_read_word(&s${n}_delayList[i].start)
+&&
+frame<=pgm_read_word(&s${n}_delayList[i].end)
+)
+{
+d=pgm_read_word(&s${n}_delayList[i].delay);
+}
+}
+return d;
+}
+`;
+    // STATE VARIABLES
+    code += `
+uint16_t s${n}_frame=0;
+bool s${n}_inRepeat=false;
+uint16_t s${n}_rs=0,s${n}_re=0,s${n}_rc=0,s${n}_rx=0,s${n}_rf=0;
+uint32_t s${n}_last=0;
+uint16_t s${n}_wait=0;
+uint16_t s${n}_holdFrame=0;
+bool s${n}_started=false;
+bool s${n}_cycled=false;
+bool s${n}_done=false;
+bool s${n}_looping=false;
+bool s${n}_scheduleDone=false;
+uint16_t s${n}_loopCount=0;
+
+void s${n}_reset()
+{
+s${n}_frame=0;
+s${n}_inRepeat=false;
+s${n}_holdFrame=0;
+s${n}_started=false;
+s${n}_cycled=false;
+s${n}_done=false;
+s${n}_looping=false;
+s${n}_scheduleDone=false;
+s${n}_loopCount=0;
+s${n}_wait=0;
+s${n}_last=millis();
+s${n}_clear();
+}
+
+void s${n}_start()
+{
+s${n}_started=true;
+s${n}_cycled=false;
+s${n}_done=false;
+s${n}_looping=false;
+s${n}_scheduleDone=false;
+s${n}_loopCount=0;
+s${n}_frame=0;
+s${n}_inRepeat=false;
+s${n}_holdFrame=0;
+s${n}_wait=0;
+s${n}_last=millis();
+}
+
+void s${n}_startLooping()
+{
+s${n}_started=true;
+s${n}_cycled=false;
+s${n}_done=false;
+s${n}_looping=true;
+s${n}_frame=0;
+s${n}_inRepeat=false;
+s${n}_holdFrame=0;
+s${n}_wait=0;
+s${n}_last=millis();
+}
+
+void s${n}_stopLooping()
+{
+s${n}_looping=false;
+s${n}_started=false;
+s${n}_cycled=false;
+s${n}_done=true;
+s${n}_frame=0;
+s${n}_inRepeat=false;
+s${n}_holdFrame=0;
+s${n}_wait=0;
+s${n}_clear();
+}
+
+void s${n}_tick()
+{
+if(!s${n}_started)return;
+if(s${n}_done)return;
+
+uint32_t now=millis();
+
+// Keep displaying the exact last frame until its delay is fully finished
+if(s${n}_cycled)
+{
+if(now-s${n}_last<s${n}_wait)
+{
+s${n}_playFrame(s${n}_holdFrame);
+return;
+}
+
+// If looping, restart immediately after the last-frame delay finishes
+if(s${n}_looping)
+{
+s${n}_frame=0;
+s${n}_cycled=false;
+}
+else
+{
+s${n}_loopCount++;
+if(s${n}_loopCount<S${n}_REQUIRED_LOOPS)
+{
+s${n}_frame=0;
+s${n}_cycled=false;
+}
+else
+{
+s${n}_done=true;
+s${n}_scheduleDone=true;
+s${n}_clear();
+`;
+    // Stop playWith items when this sync group finishes
+    if (s.playWith && s.playWith.length > 0 && !singleMainMode) {
+      s.playWith.forEach(pw => {
+        if (pw.type === "group") {
+          code += `g${pw.index + 1}_stopLooping();\n`;
+        } else {
+          code += `s${pw.index + 1}_stopLooping();\n`;
+        }
+      });
+    }
+    code += `}
+return;
+}
+}
+
+if(now-s${n}_last<s${n}_wait)return;
+s${n}_last=now;
+if(!s${n}_inRepeat)
+{
+for(uint8_t r=0;r<S${n}_REPEAT_COUNT;r++)
+{
+uint16_t s=pgm_read_word(&s${n}_repeatList[r].start);
+if(s${n}_frame==s-1)
+{
+s${n}_inRepeat=true;
+s${n}_rs=s;
+s${n}_re=pgm_read_word(&s${n}_repeatList[r].end);
+s${n}_rc=pgm_read_word(&s${n}_repeatList[r].count);
+s${n}_rx=0;
+s${n}_rf=s-1;
+break;
+}
+}
+}
+if(s${n}_inRepeat)
+{
+s${n}_holdFrame=s${n}_rf;
+s${n}_playFrame(s${n}_rf);
+s${n}_wait=s${n}_getDelay(s${n}_rf+1);
+s${n}_rf++;
+if(s${n}_rf>=s${n}_re)
+{
+s${n}_rx++;
+s${n}_rf=s${n}_rs-1;
+if(s${n}_rx>=s${n}_rc)
+{
+s${n}_inRepeat=false;
+s${n}_frame=s${n}_re;
+if(s${n}_frame>=S${n}_TOTAL_FRAMES){s${n}_cycled=true;}
+}
+}
+return;
+}
+s${n}_holdFrame=s${n}_frame;
+s${n}_playFrame(s${n}_frame);
+s${n}_wait=s${n}_getDelay(s${n}_frame+1);
+s${n}_frame++;
+if(s${n}_frame>=S${n}_TOTAL_FRAMES){s${n}_cycled=true;}
+}
+`;
+  });
+
+  // ---------- SCHEDULING ENGINE ----------
+  
+  // Generate helper functions to start/stop playWith items for each group
+  groupList.forEach((g, i) => {
+    const n = i + 1;
+    if (g.playWith && g.playWith.length > 0) {
+      code += `
+void g${n}_startPlayWithGroups()
+{
+`;
+      g.playWith.forEach(pw => {
+        if (pw.type === "group") code += `g${pw.index + 1}_startLooping();\n`;
+        else code += `s${pw.index + 1}_startLooping();\n`;
+      });
+      code += `}
+
+void g${n}_stopPlayWithGroups()
+{
+`;
+      g.playWith.forEach(pw => {
+        if (pw.type === "group") code += `g${pw.index + 1}_stopLooping();\n`;
+        else code += `s${pw.index + 1}_stopLooping();\n`;
+      });
+      code += `}
+`;
+    }
+  });
+  
+  // Generate helper functions to start/stop playWith items for each sync group
+  syncList.forEach((s, i) => {
+    const n = i + 1;
+    if (s.playWith && s.playWith.length > 0) {
+      code += `
+void s${n}_startPlayWithGroups()
+{
+`;
+      s.playWith.forEach(pw => {
+        if (pw.type === "group") code += `g${pw.index + 1}_startLooping();\n`;
+        else code += `s${pw.index + 1}_startLooping();\n`;
+      });
+      code += `}
+
+void s${n}_stopPlayWithGroups()
+{
+`;
+      s.playWith.forEach(pw => {
+        if (pw.type === "group") code += `g${pw.index + 1}_stopLooping();\n`;
+        else code += `s${pw.index + 1}_stopLooping();\n`;
+      });
+      code += `}
+`;
+    }
+  });
+  
+  code += `
+// ================= SCHEDULING ENGINE =================
+
+void checkAndStartDependentItems()
+{
+`;
+  // For each "after" item, generate a check
+  afterItems.forEach(item => {
+    const startFn = item.type === "group" ? `g${item.index + 1}_start` : `s${item.index + 1}_start`;
+    const startedVar = item.type === "group" ? `g${item.index + 1}_started` : `s${item.index + 1}_started`;
+    // Prevent items that already completed their main run from being restarted
+    const doneVar = item.type === "group" ? `g${item.index + 1}_scheduleDone` : `s${item.index + 1}_scheduleDone`;
+    
+    // Build condition: group dependencies must finish as MAIN scheduled runs.
+    // playWith helper runs must NOT trigger dependent items.
+    const conditions = item.playAfter.map(dep => {
+      const depVar = dep.type === "group" ? `g${dep.index + 1}_scheduleDone` : `s${dep.index + 1}_scheduleDone`;
+      return depVar;
+    });
+    
+    if (conditions.length > 0) {
+      // Start playWith groups alongside this item
+      let startCode = `${startFn}();`;
+      if (item.type === "group" && groupList[item.index].playWith && groupList[item.index].playWith.length > 0) {
+        startCode += `\ng${item.index + 1}_startPlayWithGroups();`;
+      }
+      
+      if (item.type === "sync") {
+        const syncItem = syncList[item.index];
+        // Start sync group's playWith helper groups
+        if (syncItem.playWith && syncItem.playWith.length > 0) {
+          startCode += `\ns${item.index + 1}_startPlayWithGroups();`;
+        }
+        // Always clear non-member groups that are not included in Play With
+        groupList.forEach((gl, gi) => {
+          const isMember = syncItem.members.includes(gi);
+          const isPlayWith = syncItem.playWith && syncItem.playWith.some(pw => pw.type === "group" && pw.index === gi);
+          if (!isMember && !isPlayWith) {
+            startCode += `\ng${gi + 1}_clear();`;
+          }
+        });
+      }
+      
+      code += `// ${item.type === "group" ? "Group" : "Sync"} ${item.index + 1} waits for: ${item.playAfter.map(d => `${d.type === "group" ? `Group ${d.index + 1}` : `Sync ${d.index + 1}`}${(d.loops || 1) > 1 ? ` (x${d.loops} loops)` : ""}`).join(", ")}
+if(!${startedVar} && !${doneVar} && ${conditions.join(" && ")})
+{
+${startCode}
+}
+`;
+    }
+  });
+  code += `}
+
+bool allItemsCompleted()
+{
+return `;
+  // Every normal group must complete its OWN scheduled run.
+  // Helper playWith runs do not count for schedule completion.
+  // Items left as "After Groups" with nothing actually selected will never
+  // start, so they are excluded here — otherwise they'd stall the whole
+  // sequence from ever completing and looping.
+  const allDoneConditions = [];
+  groupList.forEach((g, i) => {
+    if (g.playWhen === "after" && g.playAfter.length === 0) return;
+    allDoneConditions.push(`g${i + 1}_scheduleDone`);
+  });
+  syncList.forEach((s, i) => {
+    if (s.playWhen === "after" && s.playAfter.length === 0) return;
+    allDoneConditions.push(`s${i + 1}_scheduleDone`);
+  });
+  if (allDoneConditions.length > 0) {
+    code += allDoneConditions.join(" && ");
+  } else {
+    code += "true";
+  }
+  code += `;
+}
+
+void resetAllItems()
+{
+`;
+  groupList.forEach((g, i) => {
+    // In single-main-group mode, don't reset Play With helper groups here -
+    // they keep looping continuously across the main group's own restarts.
+    if (singleMainMode && !mainGroupIdx.has(i)) return;
+    code += `g${i + 1}_reset();\n`;
+  });
+  syncList.forEach((s, i) => {
+    // Same as above, for helper sync groups.
+    if (singleMainMode && !mainSyncIdx.has(i)) return;
+    code += `s${i + 1}_reset();\n`;
+  });
+  // Restart items that play from beginning
+  code += `\n// Restart items that play from beginning\n`;
+  beginningItems.forEach(item => {
+    const startFn = item.type === "group" ? `g${item.index + 1}_start` : `s${item.index + 1}_start`;
+    code += `${startFn}();\n`;
+    // For groups, also start their playWith groups - skipped in single-main
+    // mode since the helper groups are already looping continuously and
+    // must not be interrupted/restarted just because the main group looped.
+    if (!singleMainMode && item.type === "group" && groupList[item.index].playWith && groupList[item.index].playWith.length > 0) {
+      code += `g${item.index + 1}_startPlayWithGroups();\n`;
+    }
+    // For sync groups, also start their playWith groups
+    if (!singleMainMode && item.type === "sync" && syncList[item.index].playWith && syncList[item.index].playWith.length > 0) {
+      code += `s${item.index + 1}_startPlayWithGroups();\n`;
+    }
+  });
+  
+  // Immediately render the first frame of restarted beginning items
+  code += `\n// Immediately kick restarted beginning items so outputs do not stay dark\n`;
+  beginningItems.forEach(item => {
+    if (item.type === "group") {
+      code += `g${item.index + 1}_tick();\n`;
+      if (!singleMainMode && groupList[item.index].playWith && groupList[item.index].playWith.length > 0) {
+        groupList[item.index].playWith.forEach(pw => {
+          if (pw.type === "group") code += `g${pw.index + 1}_tick();\n`;
+          else code += `s${pw.index + 1}_tick();\n`;
+        });
+      }
+    } else {
+      code += `s${item.index + 1}_tick();\n`;
+      if (!singleMainMode && syncList[item.index].playWith && syncList[item.index].playWith.length > 0) {
+        syncList[item.index].playWith.forEach(pw => {
+          if (pw.type === "group") code += `g${pw.index + 1}_tick();\n`;
+          else code += `s${pw.index + 1}_tick();\n`;
+        });
+      }
+    }
+  });
+  code += `}
+`;
+
+  // ---------- setup ----------
+  code += `
+// ================= SETUP =================
+
+void setup()
+{
+`;
+  groupList.forEach((g, i) => {
+    const n = i + 1;
+    code += `pinMode(G${n}_DATA_PIN,OUTPUT);
+pinMode(G${n}_CLOCK_PIN,OUTPUT);
+pinMode(G${n}_LATCH_PIN,OUTPUT);
+digitalWrite(G${n}_CLOCK_PIN,LOW);
+digitalWrite(G${n}_LATCH_PIN,LOW);
+`;
+  });
+  
+  // Clear all shift registers on power up (remove garbage data)
+  code += `\n// Clear all shift registers on power up\n`;
+  groupList.forEach((g, i) => {
+    code += `g${i + 1}_clear();\n`;
+  });
+  
+  // Start items that play from beginning
+  code += `\n// Start items that play from beginning\n`;
+  beginningItems.forEach(item => {
+    const startFn = item.type === "group" ? `g${item.index + 1}_start` : `s${item.index + 1}_start`;
+    code += `${startFn}();\n`;
+    // For groups, also start their playWith groups
+    if (item.type === "group" && groupList[item.index].playWith && groupList[item.index].playWith.length > 0) {
+      code += `g${item.index + 1}_startPlayWithGroups();\n`;
+    }
+    // For sync groups, also start their playWith groups
+    if (item.type === "sync" && syncList[item.index].playWith && syncList[item.index].playWith.length > 0) {
+      code += `s${item.index + 1}_startPlayWithGroups();\n`;
+    }
+  });
+  
+  code += `}
+`;
+
+  // ---------- loop ----------
+  code += `
+// ================= LOOP =================
+
+void loop()
+{
+// Check if all items completed - if so, restart the sequence
+if(allItemsCompleted())
+{
+resetAllItems();
+return;
+}
+
+// Check if any dependent items can start
+checkAndStartDependentItems();
+
+// Tick all groups
+`;
+  // For each group, check if it's a member of any sync group that is currently playing.
+  // If yes, skip its tick so it doesn't clear the pins the sync group is using.
+  groupList.forEach((g, i) => {
+    const n = i + 1;
+    // Find all sync groups that contain this group as a member
+    const ownerSyncs = [];
+    syncList.forEach((s, si) => {
+      if (s.members.includes(i)) {
+        ownerSyncs.push(si + 1);
+      }
+    });
+    
+    if (ownerSyncs.length > 0) {
+      // Only tick this group if none of its sync groups are actively playing
+      const checks = ownerSyncs.map(sn => `(s${sn}_started&&!s${sn}_done)`);
+      code += `if(!(${checks.join("||")})) g${n}_tick();\n`;
+    } else {
+      code += `g${n}_tick();\n`;
+    }
+  });
+  
+  if (syncList.length > 0) {
+    code += `\n// Tick all sync groups\n`;
+    syncList.forEach((s, i) => {
+      code += `s${i + 1}_tick();\n`;
+    });
+  }
+  
+  code += `}
+`;
+  return code;
+}
+
+function generateArduinoCode() {
+  let project = document.getElementById("projectName").value;
+  if (project == "") project = "My_Project";
+  const board = document.getElementById("board").value;
+  const pinError = validateAllPins();
+  if (pinError) {
+    showToast(pinError, "error");
+    return;
+  }
+  for (const g of groups) {
+    if (g.channelCount < 1) {
+      showToast(`${g.name}: create channels first.`, "error");
+      return;
+    }
+    if (g.frameData.length === 0) {
+      showToast(`${g.name}: create a timeline first.`, "error");
+      return;
+    }
+  }
+  for (const s of syncGroups) {
+    if (s.members.length < 2) {
+      showToast(`${s.name}: select at least 2 groups to sync.`, "error");
+      return;
+    }
+    if (s.frameData.length === 0) {
+      showToast(`${s.name}: create the sync timeline first.`, "error");
+      return;
+    }
+    if (syncIsStale(s)) {
+      showToast(`${s.name}: a selected group's channels changed. Recreate the sync timeline.`, "error");
+      return;
+    }
+  }
+  
+  // Check for circular dependencies
+  const circularCheck = checkCircularDependencies();
+  if (circularCheck) {
+    showToast(`Circular dependency detected: ${circularCheck}`, "error");
+    return;
+  }
+  
+  // Always generate completely fresh code from current settings
+  document.getElementById("arduinoCode").value = "";
+  const freshCode = buildArduinoCode(project, board, groups, syncGroups);
+  document.getElementById("arduinoCode").value = freshCode;
+  document.getElementById("arduinoCode").scrollTop = 0;
+  showToast("Arduino code generated!");
+}
+
+// Check for circular dependencies
+function checkCircularDependencies() {
+  const allItems = [];
+  groups.forEach((g, i) => allItems.push({ type: "group", index: i, playWhen: g.playWhen, playAfter: g.playAfter }));
+  syncGroups.forEach((s, i) => allItems.push({ type: "sync", index: i, playWhen: s.playWhen, playAfter: s.playAfter }));
+  
+  function findCycle(item, path) {
+    const key = `${item.type}-${item.index}`;
+    if (path.has(key)) return true;
+    
+    // "beginning" items have no dependencies - they can't form cycles
+    if (item.playWhen === "beginning") return false;
+    
+    path.add(key);
+    
+    for (const dep of item.playAfter) {
+      const depItem = allItems.find(a => a.type === dep.type && a.index === dep.index);
+      if (depItem && findCycle(depItem, new Set(path))) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+  
+  for (const item of allItems) {
+    if (item.playWhen === "after" && findCycle(item, new Set())) {
+      return `${item.type === "group" ? "Group" : "Sync"} ${item.index + 1} is part of a circular dependency`;
+    }
+  }
+  
+  return null;
+}
+
+// COPY
+async function copyCode() {
+  const code = document.getElementById("arduinoCode").value;
+  const success = await copyToClipboard(code);
+  showToast(success ? "Code copied to clipboard!" : "Failed to copy", success ? "success" : "error");
+}
+
+// DOWNLOAD
+function downloadCode() {
+  let project = document.getElementById("projectName").value;
+  if (project == "") project = "My_Project";
+  const code = document.getElementById("arduinoCode").value;
+  const blob = new Blob([code], { type: "text/plain" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = project.replace(/\s+/g, "_") + ".ino";
+  link.click();
+  URL.revokeObjectURL(link.href);
+  showToast("Code downloaded!");
+}
+
+// ===============================
+// INIT
+// ===============================
+updatePins();
+addGroup();
+</script>
+</body>
+</html>
